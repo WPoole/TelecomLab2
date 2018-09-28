@@ -37,8 +37,13 @@ class ResourceRecord {
 	 */
 	byte[] RDATA;
 
-	enum RRClass {
-
+	enum RRClass {	
+		// TODO
+	}
+	
+	class Label{
+		byte length;
+		byte[] data;
 	}
 
 	public enum RRType {

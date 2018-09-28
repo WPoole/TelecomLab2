@@ -1,10 +1,19 @@
 package model;
 
 class Message {
-	String header;
+	Header header;
 	QuestionEntry[] question;
+	/**
+	 * RRs answering the question
+	 */
 	ResourceRecord[] answer;
+	/**
+	 * RRs pointing toward an authority
+	 */
 	ResourceRecord[] authority;
+	/**
+	 * RRs holding additional information
+	 */
 	ResourceRecord[] additional;
 
 	Message() {
