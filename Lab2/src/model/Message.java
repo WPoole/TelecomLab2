@@ -1,5 +1,17 @@
 package model;
 
+//+---------------------+
+//|        Header       |
+//+---------------------+
+//|       Question      | the question for the name server
+//+---------------------+
+//|        Answer       | RRs answering the question
+//+---------------------+
+//|      Authority      | RRs pointing toward an authority
+//+---------------------+
+//|      Additional     | RRs holding additional information
+//+---------------------+
+
 public class Message {
 	public String header;
 	public Question question;
