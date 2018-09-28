@@ -191,7 +191,7 @@ class Message {
 			this.value = value;
 		}
 	}
-	public enum QueryClass {
+	enum QueryClass {
 		/** the Internet*/
 		IN (1),
 		/** the CSNET class (Obsolete - used only for examples in
@@ -212,3 +212,4 @@ class Message {
 		}
 	}
 }
+
