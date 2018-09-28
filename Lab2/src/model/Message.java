@@ -1,5 +1,17 @@
 package model;
 
+//+---------------------+
+//|        Header       |
+//+---------------------+
+//|       Question      | the question for the name server
+//+---------------------+
+//|        Answer       | RRs answering the question
+//+---------------------+
+//|      Authority      | RRs pointing toward an authority
+//+---------------------+
+//|      Additional     | RRs holding additional information
+//+---------------------+
+
 class Message {
 	Header header;
 	QuestionEntry[] question;
@@ -15,8 +27,7 @@ class Message {
 	 * RRs holding additional information
 	 */
 	ResourceRecord[] additional;
-
-	Message() {
+	Message(){
 		// TODO
 	}
 
