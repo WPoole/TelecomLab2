@@ -12,7 +12,7 @@ package model;
 //|      Additional     | RRs holding additional information
 //+---------------------+
 
-class Message {
+public class Message {
 	Header header;
 	QuestionEntry[] question;
 	/**
@@ -27,10 +27,50 @@ class Message {
 	 * RRs holding additional information
 	 */
 	ResourceRecord[] additional;
-	Message(){
+	
+	public Message(){
 		// TODO
 	}
-
+	
+	static Message parseMessage(byte[] rawBytes) {
+		return null;
+	}
+	
+	
+	private static String[] parseDomainNames(byte[] rawBytes) {
+		return null;
+	}
+	
+	public class Pointer{
+		public short offset;
+		public Pointer(short offset) {
+			this.offset = offset;
+		}
+		public Pointer(byte byte0, byte byte1) {
+			String stringValue = binaryString(byte0) + binaryString(byte1);
+			if(!stringValue.substring(0,2).equals("11")) {
+				throw new IllegalArgumentException("The first two bits of a Pointer must be ones.");
+			}
+			offset = Short.parseShort(stringValue.substring(2, 16));
+		}
+		public byte[] toBytes() {
+			return new byte[] {
+				(byte)(0b11000000 | (offset << 8)),
+				(byte)(0xFF & offset),
+			};
+		}		
+	}
+	
+	public static String binaryString(byte value) {
+		return String.format("%8s", Integer.toBinaryString(value & 0xFF)).replace(' ', '0');
+	}
+	public static String binaryString(short value) {
+		return String.format("%16s", Integer.toBinaryString(value & 0xFFFF)).replace(' ', '0');
+	}
+	public static String binaryString(int value) {
+		return Integer.toBinaryString(value);
+	}
+	
 	/**This is the format of the message header:
 	 *  					           1  1  1  1  1  1  
 	 *  0   1  2  3  4  5  6  7  8  9  0  1  2  3  4  5  
