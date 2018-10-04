@@ -1,5 +1,11 @@
 package model;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import utils.Conversion;
+
 //+---------------------+
 //|        Header       |
 //+---------------------+
@@ -12,7 +18,7 @@ package model;
 //|      Additional     | RRs holding additional information
 //+---------------------+
 
-public class Message {
+public class Message implements BytesSerializable{
 	Header header;
 	QuestionEntry[] question;
 	/**
@@ -32,14 +38,48 @@ public class Message {
 		// TODO
 	}
 	
-	static Message parseMessage(byte[] rawBytes) {
+	private String[] parseDomainNames(byte[] rawBytes) throws Exception {
+		int i=0;
+		ArrayList<String> domainNames = new ArrayList<>();
+		
+		//three options: 
+		// - a pointer	
+		String firstByte = Conversion.binaryString(rawBytes[0]);
+		if(firstByte.charAt(i) == '1' && firstByte.charAt(i+1) == '1') {
+			Pointer pointer = new Pointer(rawBytes[i], rawBytes[i+1]);
+			domainNames.add(parseLabelSequence(rawBytes, pointer.offset));
+		}
+		// - a label
+		// The first two bits can only be "00", since we are dealing with a label.
+		if (!(firstByte.charAt(i) == '0' && firstByte.charAt(i+1) == '0')) {
+			throw new Exception("The first two bits of a label should be '00'");
+		}
+		// parse the sequence of labels, and stop if we reach either a zero octet or a pointer.
+		String label = parseLabelSequence(rawBytes, i);
+		
+		// TODO:
+		
+		
+		
+		return null;
+	}
+	
+	private boolean isPointer(byte b) {
+		String firstByte = Conversion.binaryString(b);
+		return firstByte.charAt(0) == '1' && firstByte.charAt(1) == '1';
+	}
+	
+	private boolean isLabel(byte b) {
+		String firstByte = Conversion.binaryString(b);
+		return firstByte.charAt(0) == '0' && firstByte.charAt(1) == '0';
+	}
+	
+	
+	private String parseLabelSequence(byte[] rawBytes, int startingOffset) {
 		return null;
 	}
 	
 	
-	private static String[] parseDomainNames(byte[] rawBytes) {
-		return null;
-	}
 	
 	public class Pointer{
 		public short offset;
@@ -47,11 +87,11 @@ public class Message {
 			this.offset = offset;
 		}
 		public Pointer(byte byte0, byte byte1) {
-			String stringValue = binaryString(byte0) + binaryString(byte1);
+			String stringValue = Conversion.binaryString(byte0) + Conversion.binaryString(byte1);
 			if(!stringValue.substring(0,2).equals("11")) {
 				throw new IllegalArgumentException("The first two bits of a Pointer must be ones.");
 			}
-			offset = Short.parseShort(stringValue.substring(2, 16));
+			offset = Short.parseShort(stringValue.substring(2, 16), 2);
 		}
 		public byte[] toBytes() {
 			return new byte[] {
@@ -61,15 +101,7 @@ public class Message {
 		}		
 	}
 	
-	public static String binaryString(byte value) {
-		return String.format("%8s", Integer.toBinaryString(value & 0xFF)).replace(' ', '0');
-	}
-	public static String binaryString(short value) {
-		return String.format("%16s", Integer.toBinaryString(value & 0xFFFF)).replace(' ', '0');
-	}
-	public static String binaryString(int value) {
-		return Integer.toBinaryString(value);
-	}
+	
 	
 	/**This is the format of the message header:
 	 *  					           1  1  1  1  1  1  
@@ -88,7 +120,7 @@ public class Message {
 	 *  |                   ARCOUNT                     |  
 	 *  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 	 */
-	class Header {
+	class Header implements BytesSerializable{
 		/**
 		 * A 16 bit identifier assigned by the program that generates any kind
 		 * of query. This identifier is copied the corresponding reply and can
@@ -161,6 +193,18 @@ public class Message {
 		Header() {
 			// TODO
 		}
+
+		@Override
+		public List<Byte> toBytes() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public void fromBytes(byte[] bytes) {
+			// TODO Auto-generated method stub
+			
+		}
 	}
 
 	/** Enum for the Message Header's OPCODE field. */
@@ -205,7 +249,7 @@ public class Message {
 		REFUSED,
 	}
 
-	class QuestionEntry {
+	class QuestionEntry implements BytesSerializable {
 		/**
 		 * a domain name represented as a sequence of labels, where each label
 		 * consists of a length octet followed by that number of octets. The
@@ -226,6 +270,16 @@ public class Message {
 		 * the QCLASS field is IN for the Internet.
 		 */
 		QueryClass qClass;
+		@Override
+		public List<Byte> toBytes() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		@Override
+		public void fromBytes(byte[] bytes) {
+			// TODO Auto-generated method stub
+			
+		}
 	}
 	
 	public enum QueryType {
@@ -261,6 +315,30 @@ public class Message {
 		private QueryClass(int value){
 			this.value = value;
 		}
+	}
+	@Override
+	public ArrayList<Byte> toBytes() {
+		// TODO Auto-generated method stub
+		ArrayList<Byte> bytes = new ArrayList<>();
+		bytes.addAll(this.header.toBytes());
+		for(QuestionEntry q : this.question) {
+			bytes.addAll(q.toBytes());
+		}
+		for(ResourceRecord rr : this.answer) {
+			bytes.addAll(rr.toBytes());
+		}
+		for(ResourceRecord rr : this.authority) {
+			bytes.addAll(rr.toBytes());
+		}
+		for(ResourceRecord rr : this.additional) {
+			bytes.addAll(rr.toBytes());
+		}
+		return bytes;
+	}
+
+	@Override
+	public void fromBytes(byte[] bytes) {
+		// TODO Auto-generated method stub
 	}
 }
 

@@ -1,6 +1,8 @@
 package model;
 
-class ResourceRecord {
+import java.util.List;
+
+class ResourceRecord implements BytesSerializable{
 	/**
 	 * An owner name, i.e., the name of the node to which this resource record
 	 * pertains. ("a domain name is terminated by a length byte of zero. The
@@ -85,6 +87,17 @@ class ResourceRecord {
 		private RRType(int value) {
 			this.value = value;
 		}
+	}
+
+	@Override
+	public List<Byte> toBytes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void fromBytes(byte[] bytes) {
+		// TODO Auto-generated method stub
 	}
 
 }
