@@ -1,8 +1,13 @@
 package model;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.platform.commons.util.StringUtils;
 
 import utils.Conversion;
 
@@ -38,30 +43,83 @@ public class Message implements BytesSerializable{
 		// TODO
 	}
 	
-	private String[] parseDomainNames(byte[] rawBytes) throws Exception {
-		int i=0;
+	public String[] parseDomainNames(byte[] rawBytes) throws Exception {
 		ArrayList<String> domainNames = new ArrayList<>();
-		
 		//three options: 
-		// - a pointer	
-		String firstByte = Conversion.binaryString(rawBytes[0]);
-		if(firstByte.charAt(i) == '1' && firstByte.charAt(i+1) == '1') {
-			Pointer pointer = new Pointer(rawBytes[i], rawBytes[i+1]);
-			domainNames.add(parseLabelSequence(rawBytes, pointer.offset));
+		// a sequence of labels ending in a zero octet
+		// a sequence of labels ending in a pointer
+		// a pointer.
+		// TODO: don't know what the "stop" condition is on the decoding! (setting it to be the length of rawBytes for now.
+		for(int index = 0; index < rawBytes.length; index++) {
+			int bytesUsed = 0;
+			if(isLabel(rawBytes[index])) {
+				String domainName = parseLabelSequence(rawBytes, 0);
+				/**
+				 * The number of bytes used is:
+				 * - one byte per character in the resulting string;
+				 * - without counting each '.';
+				 * - plus one 'length' byte at the start of each word;
+				 * (possibly also a null byte at the end.)
+				 * 
+				 * which effectively comes down to (total length) - (#words-1) + (#words) = totalLength + 1
+				 */
+				bytesUsed = domainName.length() + 1;
+			
+				if (isNullLabel(rawBytes[index])) {
+					domainNames.add(domainName);
+				}
+				else if (isPointer(rawBytes[index])) {
+					/**
+					 * the sequence of labels ends in a pointer.
+					 * Parse the label at the offset and add it to the end.
+					 */				
+					Pointer endPointer = new Pointer(rawBytes[index], rawBytes[index+1]);
+					String addition = parseLabelSequence(rawBytes, endPointer.offset);
+					domainName += addition;
+					domainNames.add(domainName);
+					
+					// we used only two bytes for the pointer.
+					bytesUsed = 2;
+					
+				}else {
+					throw new Exception("Label sequence must be terminated by either a zero octet or a pointer.");
+				}
+			}else if (isPointer(rawBytes[index])) {
+				Pointer pointer = new Pointer(rawBytes[index]);
+				domainNames.add(parseLabelSequence(rawBytes, pointer.offset));
+				bytesUsed = 2;
+			}else {
+				throw new Exception("Expected either a label or a pointer, got:"
+						+ Conversion.binaryString(rawBytes[index]) + " at position " + index);
+			}
+			index += bytesUsed;
 		}
-		// - a label
-		// The first two bits can only be "00", since we are dealing with a label.
-		if (!(firstByte.charAt(i) == '0' && firstByte.charAt(i+1) == '0')) {
-			throw new Exception("The first two bits of a label should be '00'");
+		return (String[]) domainNames.toArray();
+	}
+	
+	public byte[] domainNameToBytes(String domainName) throws Exception {
+		if (!isValidDomainName(domainName)) {
+			throw new Exception("domain name is not valid.");
 		}
-		// parse the sequence of labels, and stop if we reach either a zero octet or a pointer.
-		String label = parseLabelSequence(rawBytes, i);
-		
-		// TODO:
-		
-		
-		
-		return null;
+		String[] words = domainName.split(".");
+		int bytesNeeded = domainName.length() + 2;
+		byte[] result = new byte[bytesNeeded];
+		int i = 0;
+		for(String word : words) {
+			result[i++] = (byte) word.length();
+			for(char c : word.toCharArray()) {
+				// TODO: get ASCII value for the given char.
+				result[i++] = (byte) c;
+			}
+		}
+		// add the final zero octet.
+		result[i] = 0;
+		return result;
+	}
+	
+	private boolean isValidDomainName(String domainName) {
+		// todo;
+		return false;
 	}
 	
 	private boolean isPointer(byte b) {
@@ -71,12 +129,35 @@ public class Message implements BytesSerializable{
 	
 	private boolean isLabel(byte b) {
 		String firstByte = Conversion.binaryString(b);
-		return firstByte.charAt(0) == '0' && firstByte.charAt(1) == '0';
+		return firstByte.charAt(0) == '0' && firstByte.charAt(1) == '0' && b != 0x00;
+	}
+	
+	private boolean isNullLabel(byte b) {
+		return b == 0;
 	}
 	
 	
-	private String parseLabelSequence(byte[] rawBytes, int startingOffset) {
-		return null;
+	public String parseLabelSequence(byte[] rawBytes, int startingOffset) {
+		assert isLabel(rawBytes[startingOffset]);
+		
+		StringBuilder name = new StringBuilder();
+		
+		int index = startingOffset;
+		
+		while(isLabel(rawBytes[index])) {
+			// start decoding a label, starting at position 'index', then move 
+			// the pointer to the start of the 'word'
+			int length = rawBytes[index++];
+						
+			for(int i=0; i < length; i++, index++){
+				name.append((char) rawBytes[i]);
+			}
+			// add the '.' between 'words'.
+			if (isLabel(rawBytes[index])) {
+				name.append('.');
+			}
+		}
+		return name.toString();
 	}
 	
 	
