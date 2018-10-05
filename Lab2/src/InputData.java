@@ -3,14 +3,14 @@ public class InputData {
 
 	// Fields.
 	// All default field values were specified in assignment.
-	int timeout = 5;
-	int maxRetries = 3;
-	int port = 53;
-	String type = null;
+	int timeout = 5; // Gives how long to wait, in seconds, before retransmitting an unanswered query.
+	int maxRetries = 3; // Max number of times to retransmit an unanswered query before giving up.
+	int port = 53; // UDP port number of the DNS server.
+	String type = null; // Indicates what type of query to send to the DNS server (MX, NS, or A).
 
 	// These both need to be set.
-	String server = null;
-	String name = null;
+	String server = null; // IP address of DNS server we are contacting.
+	String name = null; // The domain name we are querying for.
 
 	// Constructor.
 	InputData(String[] args) {

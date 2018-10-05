@@ -397,6 +397,7 @@ public class Message implements BytesSerializable{
 			this.value = value;
 		}
 	}
+	
 	@Override
 	public ArrayList<Byte> toBytes() {
 		// TODO Auto-generated method stub
@@ -414,12 +415,29 @@ public class Message implements BytesSerializable{
 		for(ResourceRecord rr : this.additional) {
 			bytes.addAll(rr.toBytes());
 		}
+		
 		return bytes;
 	}
 
 	@Override
 	public void fromBytes(byte[] bytes) {
 		// TODO Auto-generated method stub
+	}
+	
+	// This is needed because UDP sockets only accept byte arrays as input type for the data.
+	public byte[] toByteArray() {
+		ArrayList<Byte> byteArrayList = toBytes();
+		byte[] byteArray = new byte[byteArrayList.size()];
+		for(int i = 0; i < byteArrayList.size(); i++) {
+			byteArray[i] = byteArrayList.get(i);
+		}
+		
+		return byteArray;
+	}
+	
+	// Returns length of this Message instance's byte list. Needed to send UDP packet to DNS server.
+	public int getByteLength() {
+		return toByteArray().length;
 	}
 }
 
