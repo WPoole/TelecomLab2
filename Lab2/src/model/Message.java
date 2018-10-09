@@ -2,13 +2,17 @@ package model;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.platform.commons.util.StringUtils;
 
+import model.enums.*;
+import model.errors.InvalidFormatException;
 import utils.Conversion;
 
 //+---------------------+
@@ -43,144 +47,8 @@ public class Message implements BytesSerializable{
 		// TODO
 	}
 	
-	public String[] parseDomainNames(byte[] rawBytes) throws Exception {
-		ArrayList<String> domainNames = new ArrayList<>();
-		//three options: 
-		// a sequence of labels ending in a zero octet
-		// a sequence of labels ending in a pointer
-		// a pointer.
-		// TODO: don't know what the "stop" condition is on the decoding! (setting it to be the length of rawBytes for now.
-		for(int index = 0; index < rawBytes.length; index++) {
-			int bytesUsed = 0;
-			if(isLabel(rawBytes[index])) {
-				String domainName = parseLabelSequence(rawBytes, 0);
-				/**
-				 * The number of bytes used is:
-				 * - one byte per character in the resulting string;
-				 * - without counting each '.';
-				 * - plus one 'length' byte at the start of each word;
-				 * (possibly also a null byte at the end.)
-				 * 
-				 * which effectively comes down to (total length) - (#words-1) + (#words) = totalLength + 1
-				 */
-				bytesUsed = domainName.length() + 1;
-			
-				if (isNullLabel(rawBytes[index])) {
-					domainNames.add(domainName);
-				}
-				else if (isPointer(rawBytes[index])) {
-					/**
-					 * the sequence of labels ends in a pointer.
-					 * Parse the label at the offset and add it to the end.
-					 */				
-					Pointer endPointer = new Pointer(rawBytes[index], rawBytes[index+1]);
-					String addition = parseLabelSequence(rawBytes, endPointer.offset);
-					domainName += addition;
-					domainNames.add(domainName);
-					
-					// we used only two bytes for the pointer.
-					bytesUsed = 2;
-					
-				}else {
-					throw new Exception("Label sequence must be terminated by either a zero octet or a pointer.");
-				}
-			}else if (isPointer(rawBytes[index])) {
-				Pointer pointer = new Pointer(rawBytes[index]);
-				domainNames.add(parseLabelSequence(rawBytes, pointer.offset));
-				bytesUsed = 2;
-			}else {
-				throw new Exception("Expected either a label or a pointer, got:"
-						+ Conversion.binaryString(rawBytes[index]) + " at position " + index);
-			}
-			index += bytesUsed;
-		}
-		return (String[]) domainNames.toArray();
-	}
-	
-	public byte[] domainNameToBytes(String domainName) throws Exception {
-		if (!isValidDomainName(domainName)) {
-			throw new Exception("domain name is not valid.");
-		}
-		String[] words = domainName.split(".");
-		int bytesNeeded = domainName.length() + 2;
-		byte[] result = new byte[bytesNeeded];
-		int i = 0;
-		for(String word : words) {
-			result[i++] = (byte) word.length();
-			for(char c : word.toCharArray()) {
-				// TODO: get ASCII value for the given char.
-				result[i++] = (byte) c;
-			}
-		}
-		// add the final zero octet.
-		result[i] = 0;
-		return result;
-	}
-	
-	private boolean isValidDomainName(String domainName) {
-		// todo;
-		return false;
-	}
-	
-	private boolean isPointer(byte b) {
-		String firstByte = Conversion.binaryString(b);
-		return firstByte.charAt(0) == '1' && firstByte.charAt(1) == '1';
-	}
-	
-	private boolean isLabel(byte b) {
-		String firstByte = Conversion.binaryString(b);
-		return firstByte.charAt(0) == '0' && firstByte.charAt(1) == '0' && b != 0x00;
-	}
-	
-	private boolean isNullLabel(byte b) {
-		return b == 0;
-	}
 	
 	
-	public String parseLabelSequence(byte[] rawBytes, int startingOffset) {
-		assert isLabel(rawBytes[startingOffset]);
-		
-		StringBuilder name = new StringBuilder();
-		
-		int index = startingOffset;
-		
-		while(isLabel(rawBytes[index])) {
-			// start decoding a label, starting at position 'index', then move 
-			// the pointer to the start of the 'word'
-			int length = rawBytes[index++];
-						
-			for(int i=0; i < length; i++, index++){
-				name.append((char) rawBytes[i]);
-			}
-			// add the '.' between 'words'.
-			if (isLabel(rawBytes[index])) {
-				name.append('.');
-			}
-		}
-		return name.toString();
-	}
-	
-	
-	
-	public class Pointer{
-		public short offset;
-		public Pointer(short offset) {
-			this.offset = offset;
-		}
-		public Pointer(byte byte0, byte byte1) {
-			String stringValue = Conversion.binaryString(byte0) + Conversion.binaryString(byte1);
-			if(!stringValue.substring(0,2).equals("11")) {
-				throw new IllegalArgumentException("The first two bits of a Pointer must be ones.");
-			}
-			offset = Short.parseShort(stringValue.substring(2, 16), 2);
-		}
-		public byte[] toBytes() {
-			return new byte[] {
-				(byte)(0b11000000 | (offset << 8)),
-				(byte)(0xFF & offset),
-			};
-		}		
-	}
 	
 	
 	
@@ -201,13 +69,13 @@ public class Message implements BytesSerializable{
 	 *  |                   ARCOUNT                     |  
 	 *  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 	 */
-	class Header implements BytesSerializable{
+	public class Header implements BytesSerializable{
 		/**
 		 * A 16 bit identifier assigned by the program that generates any kind
 		 * of query. This identifier is copied the corresponding reply and can
 		 * be used by the requester to match up replies to outstanding queries.
 		 */
-		int ID;
+		short ID;
 		/**
 		 * A one bit field that specifies whether this message is a query (0),
 		 * or a response (1).
@@ -277,57 +145,51 @@ public class Message implements BytesSerializable{
 
 		@Override
 		public List<Byte> toBytes() {
-			// TODO Auto-generated method stub
-			return null;
+			
+			String flags = 
+					Conversion.binaryString(this.QR) +
+					Conversion.binaryString(this.OPCODE) +
+					Conversion.binaryString(this.AA) +
+					Conversion.binaryString(this.TC) +
+					Conversion.binaryString(this.RD) +
+					Conversion.binaryString(this.RA) +
+					"000" + // Z value must be zero, (reserved for future use).
+					Conversion.binaryString(this.RCODE);
+			
+			ByteBuffer buffer = ByteBuffer.allocate(6 * 2)
+					.putShort(this.ID)
+					.putShort(Short.parseShort(flags, 2))
+					.putShort(this.QDCOUNT)
+					.putShort(this.ANCOUNT)
+					.putShort(this.NSCOUNT)
+					.putShort(this.ARCOUNT);
+			byte[] bytes = buffer.array();
+			return Arrays.asList();			
 		}
 
 		@Override
-		public void fromBytes(byte[] bytes) {
-			// TODO Auto-generated method stub
-			
+		public void fromBytes(byte[] bytes){
+			try {
+				ShortBuffer buffer = ByteBuffer.allocate(6 * 2).put(bytes)
+						.asShortBuffer().asReadOnlyBuffer();
+				this.ID = buffer.get();
+				String flags = Conversion.binaryString(buffer.get());
+				this.QR = flags.charAt(0) == '1';
+				this.OPCODE = OpCode.fromString(flags.substring(1, 5));
+				this.AA = flags.charAt(5) == '1';
+				this.TC = flags.charAt(6) == '1';
+				this.RD = flags.charAt(7) == '1';
+				this.RA = flags.charAt(8) == '1';
+				this.Z = 0;
+				this.RCODE = ResponseCode.fromString(flags.substring(12,16));
+				this.QDCOUNT = buffer.get();
+				this.ANCOUNT = buffer.get();
+				this.NSCOUNT = buffer.get();
+				this.ARCOUNT = buffer.get();
+			}catch(InvalidFormatException e) {
+				
+			}
 		}
-	}
-
-	/** Enum for the Message Header's OPCODE field. */
-	enum OpCode {
-		/** a standard query */
-		QUERY,
-		/** an inverse query */
-		IQUERY,
-		/** a server status request */
-		STATUS, RESERVED;
-	}
-
-	enum ResponseCode {
-		/** No error condition */
-		NO_ERROR,
-		/**
-		 * The name server was unable to interpret the query
-		 */
-		FORMAT_ERROR,
-		/**
-		 * The name server was unable to process this query due to a problem
-		 * with the name server.
-		 */
-		SERVER_FAILURE,
-		/**
-		 * Meaningful only for responses from an authoritative name server, this
-		 * code signifies that the domain name referenced in the query does not
-		 * exist.
-		 */
-		NAME_ERROR,
-		/**
-		 * The name server does not support the requested kind of query.
-		 */
-		NOT_IMPLEMENTED,
-		/**
-		 * The name server refuses to perform the specified operation for policy
-		 * reasons. For example, a name server may not wish to provide the
-		 * information to the particular requester, or a name server may not
-		 * wish to perform a particular operation (e.g., zone transfer) for
-		 * particular data.
-		 */
-		REFUSED,
 	}
 
 	class QuestionEntry implements BytesSerializable {
@@ -362,44 +224,9 @@ public class Message implements BytesSerializable{
 			
 		}
 	}
-	
-	public enum QueryType {
-		/** A request for a transfer of an entire zone */
-		AXFR (252),
-		/** A request for mailbox-related records (MB, MG or MR) */
-		MAILB (253),
-		/** A request for mail agent RRs (Obsolete - see MX) */
-		MAILA (254),
-		/** ('*') 255 A request for all records */
-		ALL (255);
-		public final int value;
-		private QueryType(int value){
-			this.value = value;
-		}
-	}
-	enum QueryClass {
-		/** the Internet*/
-		IN (1),
-		/** the CSNET class (Obsolete - used only for examples in
-		some obsolete RFCs) */
-		CS (2),
-		/**
-		 * the CHAOS class
-		 */
-		CH (3),
-		/**
-		 * Hesiod [Dyer 87]
-		 */
-		HS (4),
-		ALL (255);
-		public final int value;
-		private QueryClass(int value){
-			this.value = value;
-		}
-	}
-	
+		
 	@Override
-	public ArrayList<Byte> toBytes() {
+	public List<Byte> toBytes() {
 		// TODO Auto-generated method stub
 		ArrayList<Byte> bytes = new ArrayList<>();
 		bytes.addAll(this.header.toBytes());
@@ -415,29 +242,12 @@ public class Message implements BytesSerializable{
 		for(ResourceRecord rr : this.additional) {
 			bytes.addAll(rr.toBytes());
 		}
-		
 		return bytes;
 	}
 
 	@Override
 	public void fromBytes(byte[] bytes) {
 		// TODO Auto-generated method stub
-	}
-	
-	// This is needed because UDP sockets only accept byte arrays as input type for the data.
-	public byte[] toByteArray() {
-		ArrayList<Byte> byteArrayList = toBytes();
-		byte[] byteArray = new byte[byteArrayList.size()];
-		for(int i = 0; i < byteArrayList.size(); i++) {
-			byteArray[i] = byteArrayList.get(i);
-		}
-		
-		return byteArray;
-	}
-	
-	// Returns length of this Message instance's byte list. Needed to send UDP packet to DNS server.
-	public int getByteLength() {
-		return toByteArray().length;
 	}
 }
 
