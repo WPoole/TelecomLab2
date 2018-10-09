@@ -3,6 +3,8 @@ package model;
 import java.util.Collection;
 import java.util.List;
 
+import model.errors.InvalidFormatException;
+
 public interface BytesSerializable {
 	public List<Byte> toBytes();
 	/**
