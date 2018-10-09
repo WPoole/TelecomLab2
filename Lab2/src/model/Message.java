@@ -241,7 +241,7 @@ public class Message implements BytesSerializable{
 		}
 		for(ResourceRecord rr : this.additional) {
 			bytes.addAll(rr.toBytes());
-		}		
+		}
 		return bytes;
 	}
 
