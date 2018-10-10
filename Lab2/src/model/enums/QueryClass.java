@@ -1,5 +1,9 @@
 package model.enums;
 
+import java.nio.ByteBuffer;
+
+import utils.Conversion;
+
 public enum QueryClass {
 	/** the Internet*/
 	IN (1),
@@ -18,5 +22,24 @@ public enum QueryClass {
 	public final int value;
 	private QueryClass(int value){
 		this.value = value;
+	}
+	
+	public static QueryClass fromBytes(byte byte1, byte byte2) {
+		String concat = Conversion.binaryString(byte1) + Conversion.binaryString(byte2);
+		int value = Integer.parseInt(concat, 2);
+		switch(value) {
+			case 1:
+				return IN;
+			case 2:
+				return CS;
+			case 3:
+				return CH;
+			case 4:
+				return HS;
+			case 255:
+				return ALL;
+			default:
+				throw new IllegalArgumentException("Unrecognized QueryClass value");
+		}
 	}
 }

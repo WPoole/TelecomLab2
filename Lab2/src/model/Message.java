@@ -14,6 +14,8 @@ import org.junit.platform.commons.util.StringUtils;
 import model.enums.*;
 import model.errors.InvalidFormatException;
 import utils.Conversion;
+import utils.DomainName;
+import utils.ParsingResult;
 
 //+---------------------+
 //|        Header       |
@@ -200,7 +202,7 @@ public class Message implements BytesSerializable{
 		 * of the root. Note that this field may be an odd number of octets; no
 		 * padding is used.
 		 */
-		byte[] QNAME;
+		String QNAME;
 		/**
 		 * a two octet code which specifies the type of the query. The values
 		 * for this field include all codes valid for a TYPE field, together
@@ -212,17 +214,57 @@ public class Message implements BytesSerializable{
 		 * a two octet code that specifies the class of the query. For example,
 		 * the QCLASS field is IN for the Internet.
 		 */
-		QueryClass qClass;
+		QueryClass QCLASS;
+		/**
+		 * The number of bytes of the message which correspond to this QuestionEntry.
+		 */
+		public int bytesUsed;
+		
 		@Override
 		public List<Byte> toBytes() {
-			// TODO Auto-generated method stub
-			return null;
+			ArrayList<Byte> bytes = new ArrayList<>();
+			
+			byte[] nameBytes = DomainName.toBytes(this.QNAME);
+			for(byte b : nameBytes) {
+				bytes.add(b);
+			}
+			
+			byte[] qTypeBytes = ByteBuffer.allocate(2).putShort((short)this.QTYPE.value).array();
+			bytes.add(qTypeBytes[0]);
+			bytes.add(qTypeBytes[1]);
+			
+			byte[] qClassBytes = ByteBuffer.allocate(2).putShort((short)this.QCLASS.value).array();
+			bytes.add(qClassBytes[0]);
+			bytes.add(qClassBytes[1]); 
+			
+			return bytes;
 		}
 		@Override
-		public void fromBytes(byte[] bytes) {
-			// TODO Auto-generated method stub
+		public void fromBytes(byte[] rawBytes) {
 			
+			try {
+				ParsingResult result = DomainName.parseDomainName(rawBytes);
+				this.QNAME = result.string;
+
+				int domainNameBytes = result.bytesUsed;
+				
+				int qTypeOffset = domainNameBytes;
+				this.QTYPE = QueryType.fromBytes(rawBytes[qTypeOffset], rawBytes[qTypeOffset + 1]);	
+
+				int qClassOffset = domainNameBytes + 2;
+				this.QCLASS = QueryClass.fromBytes(rawBytes[qClassOffset], rawBytes[qClassOffset + 1]);
+				
+				this.bytesUsed = domainNameBytes + 4;
+				
+				
+			} catch (InvalidFormatException e) {
+				System.err.println("Unable to parse question entry:" + e);
+				System.exit(1);
+			}
+			
+						
 		}
+		
 	}
 		
 	@Override
@@ -247,7 +289,38 @@ public class Message implements BytesSerializable{
 
 	@Override
 	public void fromBytes(byte[] bytes) {
-		// TODO Auto-generated method stub
+		
+		
+		
+		// bytes 0 to 12 (exclusive) are the header bytes.
+		byte[] headerBytes = Arrays.copyOfRange(bytes,  0, 12);
+		this.header = new Header();
+		this.header.fromBytes(headerBytes);
+		
+		int index = 12; 
+		byte[] bytesLeft = Arrays.copyOfRange(bytes,  12, bytes.length);
+		
+		
+		int questionCount = this.header.QDCOUNT;
+		this.question = new QuestionEntry[questionCount];
+		for(int i=0; i<questionCount; i++) {
+			// TODO: parse the domain names, while also keeping track of how many bytes were read.
+			QuestionEntry newQuestion = new QuestionEntry();
+			newQuestion.fromBytes(bytesLeft);
+			
+			int bytesUsed = newQuestion.bytesUsed;
+			
+			index += bytesUsed;
+			
+			// TODO
+			
+			
+			
+			
+		}
+		
+		
+		
 	}
 }
 
