@@ -74,6 +74,9 @@ public class DnsClient {
 	}
 	
 	private static void parseMessageResponse(DatagramPacket responsePacket) {
+		byte[] bytes = responsePacket.getData();
+		Message msg = new Message();
+		msg.fromBytes(bytes);
 		
 	}
 
