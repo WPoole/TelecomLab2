@@ -5,11 +5,15 @@ import model.errors.InvalidFormatException;
 /** Enum for the Message Header's OPCODE field. */
 public enum OpCode {
 	/** a standard query */
-	QUERY,
+	QUERY(0),
 	/** an inverse query */
-	IQUERY,
+	IQUERY(1),
 	/** a server status request */
-	STATUS;
+	STATUS(2);
+	public final int value;
+	private OpCode(int value) {
+		this.value = value;
+	}
 	public static OpCode fromString(String x) throws InvalidFormatException {
         switch(x) {
         case "0000":

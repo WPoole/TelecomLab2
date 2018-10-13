@@ -110,13 +110,13 @@ public class MessageHeader implements BytesSerializable{
 	public List<Byte> toBytes() {
 		String flags = 
 				Conversion.binaryString(this.QR) +
-				Conversion.binaryString(this.OPCODE) +
+				Conversion.binaryString(this.OPCODE.value, 4) +
 				Conversion.binaryString(this.AA) +
 				Conversion.binaryString(this.TC) +
 				Conversion.binaryString(this.RD) +
 				Conversion.binaryString(this.RA) +
 				"000" + // Z value must be zero, (reserved for future use).
-				Conversion.binaryString(this.RCODE);
+				Conversion.binaryString(this.RCODE.value, 4);
 		
 		ByteBuffer buffer = ByteBuffer.allocate(6 * 2)
 				.putShort(this.ID)
@@ -134,27 +134,31 @@ public class MessageHeader implements BytesSerializable{
 		return result;
 	}
 
-	@Override
-	public void fromBytes(byte[] bytes){
+	
+	public static MessageHeader fromBytes(byte[] bytes){
+		MessageHeader header = new MessageHeader();
 		try {
 			ShortBuffer buffer = ByteBuffer.allocate(6 * 2).put(bytes)
 					.asShortBuffer().asReadOnlyBuffer();
-			this.ID = buffer.get();
+			header.ID = buffer.get();
 			String flags = Conversion.binaryString(buffer.get());
-			this.QR = flags.charAt(0) == '1';
-			this.OPCODE = OpCode.fromString(flags.substring(1, 5));
-			this.AA = flags.charAt(5) == '1';
-			this.TC = flags.charAt(6) == '1';
-			this.RD = flags.charAt(7) == '1';
-			this.RA = flags.charAt(8) == '1';
-			this.Z = 0;
-			this.RCODE = ResponseCode.fromString(flags.substring(12,16));
-			this.QDCOUNT = buffer.get();
-			this.ANCOUNT = buffer.get();
-			this.NSCOUNT = buffer.get();
-			this.ARCOUNT = buffer.get();
+			header.QR = flags.charAt(0) == '1';
+			header.OPCODE = OpCode.fromString(flags.substring(1, 5));
+			header.AA = flags.charAt(5) == '1';
+			header.TC = flags.charAt(6) == '1';
+			header.RD = flags.charAt(7) == '1';
+			header.RA = flags.charAt(8) == '1';
+			header.Z = 0;
+			header.RCODE = ResponseCode.fromString(flags.substring(12,16));
+			header.QDCOUNT = buffer.get();
+			header.ANCOUNT = buffer.get();
+			header.NSCOUNT = buffer.get();
+			header.ARCOUNT = buffer.get();
 		}catch(InvalidFormatException e) {
+			System.err.println("ERROR: Unable to parse the message header");
 			e.printStackTrace();
 		}
+		return header;
+		
 	}
 }

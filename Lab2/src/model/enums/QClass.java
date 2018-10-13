@@ -1,5 +1,7 @@
 package model.enums;
 
+import java.nio.ByteBuffer;
+
 import utils.Conversion;
 
 public enum QClass {
@@ -39,5 +41,8 @@ public enum QClass {
 			default:
 				throw new IllegalArgumentException("Unrecognized QueryClass value");
 		}
+	}
+	public byte[] toBytes() {
+		return ByteBuffer.allocate(2).putShort((short) this.value).array();
 	}
 }

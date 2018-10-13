@@ -1,5 +1,7 @@
 package model.enums;
 
+import java.nio.ByteBuffer;
+
 import model.errors.InvalidFormatException;
 import utils.Conversion;
 
@@ -41,6 +43,14 @@ public enum Type {
 
 	private Type(int value) {
 		this.value = value;
+	}
+	
+	public short getValue() {
+		return (short) this.value;
+	}
+	
+	public byte[] toBytes() {
+		return ByteBuffer.allocate(2).putShort((short) this.value).array();		
 	}
 
 	public static Type fromBytes(byte byte1, byte byte2) throws InvalidFormatException {

@@ -83,7 +83,7 @@ public class DomainName {
 		return b == 0;
 	}
 	
-	public static ParsingResult parseDomainName(byte[] rawBytes) throws InvalidFormatException{
+	public static ParsingResult<String> parseDomainName(byte[] rawBytes) throws InvalidFormatException{
 		return parseDomainName(rawBytes, 0);
 	}
 	
@@ -96,7 +96,7 @@ public class DomainName {
 	 * @return
 	 * @throws InvalidFormatException
 	 */
-	public static ParsingResult parseDomainName(byte[] rawBytes, int startingOffset) throws InvalidFormatException{
+	public static ParsingResult<String> parseDomainName(byte[] rawBytes, int startingOffset) throws InvalidFormatException{
 		assert isLabel(rawBytes[startingOffset]);
 
 		StringBuilder domainName = new StringBuilder();
@@ -110,8 +110,8 @@ public class DomainName {
 				domainName.append(".");
 			}
 			// parse a single label (a word of the hostname).
-			ParsingResult wordResult = parseLabel(rawBytes, index);
-			domainName.append(wordResult.string);
+			ParsingResult<String> wordResult = parseLabel(rawBytes, index);
+			domainName.append(wordResult.result);
 			bytesUsed += wordResult.bytesUsed;
 			wordCount++;
 			index = startingOffset + bytesUsed;
@@ -126,7 +126,7 @@ public class DomainName {
 			Pointer p = new Pointer(rawBytes[index], rawBytes[index+1]);
 			// decode the domain name at the pointer's offset ( recursive)
 			ParsingResult result = parseDomainName(rawBytes, p.offset);
-			domainName.append(result.string);
+			domainName.append(result.result);
 			// NOTE: we used only two bytes! (since it was a pointer)
 			bytesUsed += 2;
 		}

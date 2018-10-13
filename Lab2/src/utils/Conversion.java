@@ -17,21 +17,19 @@ public class Conversion {
 	public static String binaryString(boolean value) {
 		return value ? "1" : "0";
 	}
-	public static String binaryString(OpCode opcode) {
-		switch(opcode) {
-			case QUERY:
-				return "0000";
-			case IQUERY:
-				return "0001";
-			case STATUS:
-				return "0010";
-			default:
-				return "0000";
-		}
+	public static String binaryString(int value, int width) {
+		return binaryString(value, width, '0');
 	}
-	public static String binaryString(ResponseCode rcode) {
-		// TODO Auto-generated method stub
-		return null;
+	/**
+	 * Returns the binary representation of the given value as a binary string of length "width".
+	 * The "paddingChar" character is used for the left-padding.
+	 * @param value the value to convert.
+	 * @param width the width of the resulting binary string.
+	 * @param paddingChar the character to use for padding. defaults to '0'.
+	 * @return the binary representation of the value.
+	 */
+	public static String binaryString(int value, int width, char paddingChar) {
+		return String.format("%"+width+"s", Integer.toBinaryString(value)).replace(' ', paddingChar);
 	}
 	
 	public static byte[] ipAddressStringToByteArray(String ipAddressString) {

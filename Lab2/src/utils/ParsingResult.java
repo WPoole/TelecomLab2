@@ -1,11 +1,11 @@
 package utils;
 
-public class ParsingResult {
-	public String string;
+public class ParsingResult<T> {
+	public T result;
 	public int bytesUsed;
 
-	public ParsingResult(String string, int bytesUsed) {
-		this.string = string;
+	public ParsingResult(T content, int bytesUsed) {
+		this.result = content;
 		this.bytesUsed = bytesUsed;
 	}
 }
