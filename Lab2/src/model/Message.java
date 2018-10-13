@@ -13,8 +13,11 @@ import org.junit.platform.commons.util.StringUtils;
 
 import model.enums.*;
 import model.errors.InvalidFormatException;
+import model.records.ResourceRecord;
 import utils.Conversion;
-
+import utils.DomainName;
+import utils.ParsingResult;
+import model.records.ResourceRecord;
 //+---------------------+
 //|        Header       |
 //+---------------------+
@@ -28,8 +31,8 @@ import utils.Conversion;
 //+---------------------+
 
 public class Message implements BytesSerializable{
-	Header header;
-	QuestionEntry[] question;
+	MessageHeader header;
+	Question[] question;
 	/**
 	 * RRs answering the question
 	 */
@@ -43,194 +46,61 @@ public class Message implements BytesSerializable{
 	 */
 	ResourceRecord[] additional;
 	
-	public Message(){
-		// TODO
-	}
-	
-	
-	
-	
-	
-	
-	/**This is the format of the message header:
-	 *  					           1  1  1  1  1  1  
-	 *  0   1  2  3  4  5  6  7  8  9  0  1  2  3  4  5  
-	 *  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-	 *  |                     ID                        |  
-	 *  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-	 *  |QR|  Opcode   |AA|TC|RD|RA|  Z     |   RCODE   |      
-	 *  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-	 *  |                   QDCOUNT                     |  
-	 *  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-	 *  |                   ANCOUNT                     |  
-	 *  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-	 *  |                   NSCOUNT                     |  
-	 *  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-	 *  |                   ARCOUNT                     |  
-	 *  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+	/**
+	 * Default constructor, used mainly when creating a message from bytes (ex: new Message().fromBytes)
 	 */
-	public class Header implements BytesSerializable{
-		/**
-		 * A 16 bit identifier assigned by the program that generates any kind
-		 * of query. This identifier is copied the corresponding reply and can
-		 * be used by the requester to match up replies to outstanding queries.
-		 */
-		short ID;
-		/**
-		 * A one bit field that specifies whether this message is a query (0),
-		 * or a response (1).
-		 */
-		boolean QR;
-		/**
-		 * A four bit field that specifies kind of query in this message. This
-		 * value is set by the originator of a query and copied into the
-		 * response. The values are:
-		 */
-		OpCode OPCODE;
-		/**
-		 * Authoritative Answer - this bit is valid in responses, and specifies
-		 * that the responding name server is an authority for the domain name
-		 * in question section.
-		 */
-		boolean AA;
-		/**
-		 * TrunCation - specifies that this message was truncated due to length
-		 * greater than that permitted on the transmission channel.
-		 */
-		boolean TC;
-		/**
-		 * Recursion Desired - this bit may be set in a query and is copied into
-		 * the response. If RD is set, it directs the name server to pursue the
-		 * query recursively. Recursive query support is optional.
-		 */
-		boolean RD;
-		/**
-		 * Recursion Available - this be is set or cleared in a response, and
-		 * denotes whether recursive query support is available in the name
-		 * server.
-		 */
-		boolean RA;
-		/**
-		 * Reserved for future use. Must be zero in all queries and responses.
-		 */
-		int Z;
-		/**
-		 * Response code - this 4 bit field is set as part of responses.
-		 */
-		ResponseCode RCODE;
-		/**
-		 * an unsigned 16 bit integer specifying the number of entries in the
-		 * question section.
-		 */
-		short QDCOUNT;
-		/**
-		 * an unsigned 16 bit integer specifying the number of resource records
-		 * in the answer section.
-		 */
-		short ANCOUNT;
-		/**
-		 * an unsigned 16 bit integer specifying the number of name server
-		 * resource records in the authority records section.
-		 */
-		short NSCOUNT;
-		/**
-		 * an unsigned 16 bit integer specifying the number of resource records
-		 * in the additional records section
-		 */
-		short ARCOUNT;
-
-		Header() {
-			// TODO
-		}
-
-		@Override
-		public List<Byte> toBytes() {
-			
-			String flags = 
-					Conversion.binaryString(this.QR) +
-					Conversion.binaryString(this.OPCODE) +
-					Conversion.binaryString(this.AA) +
-					Conversion.binaryString(this.TC) +
-					Conversion.binaryString(this.RD) +
-					Conversion.binaryString(this.RA) +
-					"000" + // Z value must be zero, (reserved for future use).
-					Conversion.binaryString(this.RCODE);
-			
-			ByteBuffer buffer = ByteBuffer.allocate(6 * 2)
-					.putShort(this.ID)
-					.putShort(Short.parseShort(flags, 2))
-					.putShort(this.QDCOUNT)
-					.putShort(this.ANCOUNT)
-					.putShort(this.NSCOUNT)
-					.putShort(this.ARCOUNT);
-			byte[] bytes = buffer.array();
-			return Arrays.asList();			
-		}
-
-		@Override
-		public void fromBytes(byte[] bytes){
-			try {
-				ShortBuffer buffer = ByteBuffer.allocate(6 * 2).put(bytes)
-						.asShortBuffer().asReadOnlyBuffer();
-				this.ID = buffer.get();
-				String flags = Conversion.binaryString(buffer.get());
-				this.QR = flags.charAt(0) == '1';
-				this.OPCODE = OpCode.fromString(flags.substring(1, 5));
-				this.AA = flags.charAt(5) == '1';
-				this.TC = flags.charAt(6) == '1';
-				this.RD = flags.charAt(7) == '1';
-				this.RA = flags.charAt(8) == '1';
-				this.Z = 0;
-				this.RCODE = ResponseCode.fromString(flags.substring(12,16));
-				this.QDCOUNT = buffer.get();
-				this.ANCOUNT = buffer.get();
-				this.NSCOUNT = buffer.get();
-				this.ARCOUNT = buffer.get();
-			}catch(InvalidFormatException e) {
-				
-			}
-		}
-	}
-
-	class QuestionEntry implements BytesSerializable {
-		/**
-		 * a domain name represented as a sequence of labels, where each label
-		 * consists of a length octet followed by that number of octets. The
-		 * domain name terminates with the zero length octet for the null label
-		 * of the root. Note that this field may be an odd number of octets; no
-		 * padding is used.
-		 */
-		byte[] QNAME;
-		/**
-		 * a two octet code which specifies the type of the query. The values
-		 * for this field include all codes valid for a TYPE field, together
-		 * with some more general codes which can match more than one type of
-		 * RR.
-		 */
-		QueryType QTYPE;
-		/**
-		 * a two octet code that specifies the class of the query. For example,
-		 * the QCLASS field is IN for the Internet.
-		 */
-		QueryClass qClass;
-		@Override
-		public List<Byte> toBytes() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-		@Override
-		public void fromBytes(byte[] bytes) {
-			// TODO Auto-generated method stub
-			
-		}
-	}
+	public Message() {
 		
+	}
+	
+	/**
+	 * Creates a new Message object using the given parameters.
+	 * @note To create a new message using bytes, use the default constructor and the .fromBytes() instance method.
+	 * @param qType
+	 * @param dnsServerIpAddress
+	 * @param name
+	 */
+	public Message(Type type, byte[] dnsServerIpAddress, String name) {
+		// TODO: populate all the fields correctly.
+		
+		this.header = new MessageHeader();
+		this.header.ID = MessageHeader.defaultId; // some integer we always use.
+		this.header.QR = false; // sending a query.
+		this.header.OPCODE = OpCode.QUERY; // we are sending a standard Query.
+		this.header.AA = false; // this is not an authoritative answer.
+		this.header.TC = false; // we are (hopefully) not going to send a truncated message.
+		this.header.RD = false; // (not sure) recursion desired. optional.
+		this.header.Z = 0; // (always zero).
+		this.header.RCODE = ResponseCode.NO_ERROR; // will be set by the server during the response.
+		this.header.QDCOUNT = 1; // we are asking one question (one domain name)
+		this.header.ANCOUNT = 0; // no resource records in answer (this is a question)
+		this.header.NSCOUNT = 0; // same here
+		this.header.ARCOUNT = 0; // same here also.
+		
+
+		Question question = new Question();
+		// TODO: Double-check this, but as far as I know, this behavior seems common to all three types (A, MX, NS).
+		question.QNAME = name;
+		question.QTYPE = type;
+		question.QCLASS = QClass.IN;
+		switch(type) {
+			case A:{						
+			}
+			case MX:{
+			}
+			case NS: {
+			}
+			default:
+				break;
+		}	
+	}
+
 	@Override
 	public List<Byte> toBytes() {
 		// TODO Auto-generated method stub
 		ArrayList<Byte> bytes = new ArrayList<>();
 		bytes.addAll(this.header.toBytes());
-		for(QuestionEntry q : this.question) {
+		for(Question q : this.question) {
 			bytes.addAll(q.toBytes());
 		}
 		for(ResourceRecord rr : this.answer) {
@@ -244,10 +114,50 @@ public class Message implements BytesSerializable{
 		}
 		return bytes;
 	}
-
-	@Override
-	public void fromBytes(byte[] bytes) {
-		// TODO Auto-generated method stub
+	
+	
+	public static Message fromBytes(byte[] bytes) throws InvalidFormatException {
+		Message m = new Message();
+		ByteBuffer buffer = ByteBuffer.wrap(bytes).asReadOnlyBuffer();
+		
+		// bytes 0 to 12 (exclusive) are the header bytes.
+		byte[] headerBytes = new byte[12];
+		buffer.get(headerBytes);
+		m.header = MessageHeader.fromBytes(headerBytes);
+		
+		if(m.header.RCODE != ResponseCode.NO_ERROR) {
+			switch(m.header.RCODE) {
+				case FORMAT_ERROR:
+					System.err.println("ERROR \t The name server was unable to interpret the query.");
+				case NAME_ERROR:
+					System.err.println("ERROR \t The domain name referenced in the query does not exist.");
+				case SERVER_FAILURE:
+					System.err.println("ERROR \t The name server was unable to process this query due to a problem with the name server.");
+				case REFUSED:
+					System.err.println("ERROR \t The name server refuses to perform the specified operation for policy reasons.");
+				case NOT_IMPLEMENTED:
+					System.err.println("ERROR \t The name server does not support the requested kind of query.");
+				default:
+					break;
+			}
+			System.exit(1);
+		}
+				
+		int index = 12; 
+		byte[] bytesLeft = Arrays.copyOfRange(bytes,  index, bytes.length);
+		
+		
+		int questionCount = m.header.QDCOUNT;
+		m.question = new Question[questionCount];
+		for(int i=0; i<questionCount; i++) {
+			// TODO: parse the domain names, while also keeping track of how many bytes were read.
+			Question newQuestion = Question.fromBytes(bytesLeft);
+			index += newQuestion.length();
+		}
+		// TODO: implement the rest.
+		
+		return m;
+		
 	}
 }
 

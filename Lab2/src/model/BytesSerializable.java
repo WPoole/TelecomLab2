@@ -6,9 +6,21 @@ import java.util.Collection;
 import java.util.List;
 
 import model.errors.InvalidFormatException;
+import utils.Conversion;
 
+/**
+ * Interface which describes objects that can be serialized into a sequence of bytes.
+ * NOTE: One of toBytes() or toByteArray() must absolutely be implemented.
+ */
 public interface BytesSerializable {
-	public List<Byte> toBytes();
+	default public List<Byte> toBytes() {
+		byte[] bytes = this.toByteArray();
+		ArrayList<Byte> values = new ArrayList<>();
+		for(byte b : bytes) {
+			values.add(b);
+		}
+		return values;		
+	}
 	default public byte[] toByteArray() {
 		List<Byte> bytesList = this.toBytes();
 		byte[] byteArray = new byte[bytesList.size()];
@@ -17,9 +29,4 @@ public interface BytesSerializable {
 		}
 		return byteArray;
 	}
-	/**
-	 * Populate the instance using the bytes provided.
-	 * @param bytes Bytes to use to populate the instance.
-	 */
-	public void fromBytes(byte[] bytes);
 }

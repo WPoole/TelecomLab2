@@ -1,29 +1,31 @@
 package model.enums;
 
+import java.nio.ByteBuffer;
+
 import model.errors.InvalidFormatException;
 
 public enum ResponseCode {
 	/** No error condition */
-	NO_ERROR,
+	NO_ERROR(0),
 	/**
 	 * The name server was unable to interpret the query
 	 */
-	FORMAT_ERROR,
+	FORMAT_ERROR(1),
 	/**
 	 * The name server was unable to process this query due to a problem
 	 * with the name server.
 	 */
-	SERVER_FAILURE,
+	SERVER_FAILURE(2),
 	/**
 	 * Meaningful only for responses from an authoritative name server, this
 	 * code signifies that the domain name referenced in the query does not
 	 * exist.
 	 */
-	NAME_ERROR,
+	NAME_ERROR(3),
 	/**
 	 * The name server does not support the requested kind of query.
 	 */
-	NOT_IMPLEMENTED,
+	NOT_IMPLEMENTED(4),
 	/**
 	 * The name server refuses to perform the specified operation for policy
 	 * reasons. For example, a name server may not wish to provide the
@@ -31,8 +33,12 @@ public enum ResponseCode {
 	 * wish to perform a particular operation (e.g., zone transfer) for
 	 * particular data.
 	 */
-	REFUSED;
+	REFUSED(5);
 	
+	public final int value;
+	private ResponseCode(int value){
+		this.value = value;
+	}
 	public static ResponseCode fromString(String x) throws InvalidFormatException {
         switch(x) {
 	        case "0000":
@@ -52,4 +58,11 @@ public enum ResponseCode {
         }
     }
 	
+	/**
+	 * Returns the length-4 binary representation of this response code.
+	 * @return
+	 */
+	public String toBinaryString() {
+		return String.format("%4s", Integer.toBinaryString(this.value)).replace(' ', '0');
+	}	
 }

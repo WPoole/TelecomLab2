@@ -9,7 +9,7 @@ public class InputData {
 	String type = null; // Indicates what type of query to send to the DNS server (MX, NS, or A).
 
 	// These both need to be set.
-	String server = null; // IP address of DNS server we are contacting.
+	String dnsServerIp = null; // IP address of DNS server we are contacting.
 	String name = null; // The domain name we are querying for.
 
 	// Constructor.
@@ -104,14 +104,14 @@ public class InputData {
 			if(args[i].charAt(0) == '@') {
 				// If the server IP address has already been set, then we know that more than one server IP 
 				// address argument was entered, which is not allowed.
-				if(this.server != null) {
+				if(this.dnsServerIp != null) {
 					throw new IllegalArgumentException("Incorrect Input Format - There cannot be more than one server IP address in the input.");
 				}
 				
 				String serverIp = args[i].substring(1);
 				// Need to check if this is a valid IP address format.
 				if(isValidIpFormat(serverIp)) {
-					this.server = serverIp;
+					this.dnsServerIp = serverIp;
 					return;
 				} else {
 					throw new IllegalArgumentException("Incorrect Input Format - Please enter a valid server IP address.");
