@@ -15,7 +15,7 @@ public class CNAMERecord extends ResourceRecord {
 	}
 	
 	@Override
-	void parseRData() {
+	protected void parseRData() {
 		try {
 			this.cannonicalName = DomainName.parseDomainName(this.RDATA).result;
 		} catch (InvalidFormatException e) {
@@ -25,7 +25,7 @@ public class CNAMERecord extends ResourceRecord {
 	}
 
 	@Override
-	void printToConsole() {
+	protected String consoleString() {
 		// CNAME <tab> [alias] <tab> [seconds can cache] <tab> [auth | nonauth]
 		StringBuilder output = new StringBuilder();
 		output.append("CNAME\t");
@@ -34,6 +34,6 @@ public class CNAMERecord extends ResourceRecord {
 		output.append(this.TTL);
 		output.append('\t');
 		output.append("[TODO: Auth | no-auth]");
-		System.out.println(output.toString());
+		return output.toString();
 	}
 }

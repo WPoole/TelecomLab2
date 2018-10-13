@@ -124,10 +124,14 @@ public abstract class ResourceRecord implements BytesSerializable {
 		return rr;
 	}
 	
+	public void printToConsole() {
+		System.out.println(this.consoleString());
+	}
+	
 	/**
 	 * Populates the corresponding fields using the Bytes in the RDATA array.
 	 */
-	abstract void parseRData();
-
-	abstract void printToConsole();
+	protected abstract void parseRData();
+	
+	protected abstract String consoleString();
 }

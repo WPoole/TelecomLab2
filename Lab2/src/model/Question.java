@@ -33,6 +33,10 @@ public class Question implements BytesSerializable {
 
 	@Override
 	public byte[] toByteArray() {
+		if (this.qNameBytes == null) {
+			// if we haven't decoded the domain name string yet, do so now.
+			this.qNameBytes = DomainName.toBytes(this.QNAME);
+		}
 		byte[] bytes = ByteBuffer.allocate(this.length())
 				.put(this.qNameBytes)
 				.put(this.QTYPE.toBytes())

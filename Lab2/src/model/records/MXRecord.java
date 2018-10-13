@@ -23,7 +23,7 @@ public class MXRecord extends ResourceRecord {
 	}
 	
 	@Override
-	void parseRData() {
+	protected void parseRData() {
 		this.preference = ByteBuffer.wrap(this.RDATA, 0, 2).getShort();
 		try {
 			this.exchange = DomainName.parseDomainName(this.RDATA, 2).result;
@@ -34,7 +34,7 @@ public class MXRecord extends ResourceRecord {
 	}
 
 	@Override
-	void printToConsole() {
+	protected String consoleString() {
 		// MX <tab> [alias] <tab> [pref] <tab> [seconds can cache] <tab> [auth | nonauth]
 		StringBuilder output = new StringBuilder();
 		output.append("MX\t");
@@ -44,7 +44,7 @@ public class MXRecord extends ResourceRecord {
 		output.append(this.TTL);
 		output.append('\t');
 		output.append("[TODO: Auth | no-auth]");
-		System.out.println(output.toString());
+		return output.toString();
 	}
 
 }

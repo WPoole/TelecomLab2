@@ -11,13 +11,13 @@ public class ARecord extends ResourceRecord {
 	
 	
 	@Override
-	void parseRData() {
+	protected void parseRData() {
 		assert this.RDLENGTH == 4;
 		this.address = this.RDATA;
 	}
 
 	@Override
-	void printToConsole() {
+	protected String consoleString() {
 		// IP <tab> [ip address] <tab> [seconds can cache] <tab> [auth | nonauth]
 		StringBuilder output = new StringBuilder();
 		output.append("IP\t");
@@ -31,6 +31,6 @@ public class ARecord extends ResourceRecord {
 		output.append(this.TTL);
 		output.append('\t');
 		output.append("[TODO: Auth | no-auth]");
-		System.out.println(output.toString());
+		return output.toString();
 	}
 }

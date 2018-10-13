@@ -1,3 +1,5 @@
+import model.enums.Type;
+import utils.Conversion;
 
 public class InputData {
 
@@ -6,11 +8,11 @@ public class InputData {
 	int timeout = 5; // Gives how long to wait, in seconds, before retransmitting an unanswered query.
 	int maxRetries = 3; // Max number of times to retransmit an unanswered query before giving up.
 	int port = 53; // UDP port number of the DNS server.
-	String type = null; // Indicates what type of query to send to the DNS server (MX, NS, or A).
+	Type type = null; // Indicates what type of query to send to the DNS server (MX, NS, or A).
 
 	// These both need to be set.
-	String dnsServerIp = null; // IP address of DNS server we are contacting.
-	String name = null; // The domain name we are querying for.
+	byte[] dnsServerIp; // IP address of DNS server we are contacting.
+	String name; // The domain name we are querying for.
 
 	// Constructor.
 	InputData(String[] args) {
@@ -33,7 +35,7 @@ public class InputData {
 				if(InputData.isInteger(args[i+1])) {
 					this.timeout = Integer.parseInt(args[i+1]);
 				} else {
-					throw new IllegalArgumentException("Incorrect Input Format - The " + args[i] + "flag was followed by an incorrect argument.");
+					throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - The " + args[i] + " flag was followed by an incorrect argument.");
 				}
 			}
 		}
@@ -49,7 +51,7 @@ public class InputData {
 				if(InputData.isInteger(args[i+1])) {
 					this.maxRetries = Integer.parseInt(args[i+1]);
 				} else {
-					throw new IllegalArgumentException("Incorrect Input Format - The " + args[i] + "flag was followed by an incorrect argument.");
+					throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - The " + args[i] + " flag was followed by an incorrect argument.");
 				}
 			}
 		}
@@ -66,7 +68,7 @@ public class InputData {
 				if(InputData.isInteger(args[i+1])) {
 					this.port = Integer.parseInt(args[i+1]);
 				} else {
-					throw new IllegalArgumentException("Incorrect Input Format - The " + args[i] + "flag was followed by an incorrect argument.");
+					throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - The " + args[i] + " flag was followed by an incorrect argument.");
 				}
 			}
 		}
@@ -82,19 +84,18 @@ public class InputData {
 			// If the type is already set, then we know there must be duplicate type flags in the input,
 			// which is not allowed.
 			if(this.type != null) {
-				throw new IllegalArgumentException("Incorrect Input Format - There cannot be more than one type flag in the input.");
+				throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - There cannot be more than one type flag in the input.");
 			}
-
 			if(args[i].equals("-mx")) {
-				this.type = "MX";
+				this.type = Type.MX;
 
 			} else if(args[i].equals("-ns")) {
-				this.type = "NS";
+				this.type = Type.NS;
 			}
 		}
 
 		// If no -mx or -ns flag is found we set type field to default value specified in assignment.
-		this.type = "A";
+		this.type = Type.A;
 	}
 
 	private void setServer(String[] args) {
@@ -105,22 +106,21 @@ public class InputData {
 				// If the server IP address has already been set, then we know that more than one server IP 
 				// address argument was entered, which is not allowed.
 				if(this.dnsServerIp != null) {
-					throw new IllegalArgumentException("Incorrect Input Format - There cannot be more than one server IP address in the input.");
+					throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - There cannot be more than one server IP address in the input.");
 				}
 				
 				String serverIp = args[i].substring(1);
 				// Need to check if this is a valid IP address format.
 				if(isValidIpFormat(serverIp)) {
-					this.dnsServerIp = serverIp;
+					this.dnsServerIp = Conversion.ipAddressStringToByteArray(serverIp);
 					return;
 				} else {
-					throw new IllegalArgumentException("Incorrect Input Format - Please enter a valid server IP address.");
+					throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - Please enter a valid server IP address.");
 				}
 			}
 		}
-		
 		// If we get to here we know they did not input a server IP address using the @ character.
-		throw new IllegalArgumentException("Incorrect Input Format - Please enter a valid server IP address starting with the '@' character.");
+		throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - Please enter a valid server IP address starting with the '@' character.");
 	}
 
 	private void setName(String[] args) {
@@ -128,7 +128,7 @@ public class InputData {
 	}
 
 	// Helpers.
-	private static boolean isInteger(String input) {
+	public static boolean isInteger(String input) {
 		try { 
 			Integer.parseInt(input); 
 		} catch(NumberFormatException e) { 
@@ -140,20 +140,22 @@ public class InputData {
 		return true;
 	}
 
-	private static boolean isValidIpFormat(String serverIp) {
+	public static boolean isValidIpFormat(String serverIp) {
 		String[] ipComponents = serverIp.split(".");
 		if(ipComponents.length != 4) { // There should be 4 numbers in each IP address.
 			return false;
-		} else {
-			for(int i = 0; i < ipComponents.length; i++) {
-				if(!isInteger(ipComponents[i])) {
-					return false;
-				}
-			}
-
-			// If there are 4 integer values that are separated by periods, it has the correct format
-			// of an IP address.
-			return true;
 		}
+		for(int i = 0; i < ipComponents.length; i++) {
+			if(!isInteger(ipComponents[i])) {
+				return false;
+			}
+			int value = Integer.parseInt(ipComponents[i]);
+			if(value > 0xFF) {
+				return false;
+			}
+		}
+		// If there are 4 integer values that are separated by periods, it has the correct format
+		// of an IP address.
+		return true;
 	}
 }

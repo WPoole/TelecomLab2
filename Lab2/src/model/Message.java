@@ -31,20 +31,20 @@ import model.records.ResourceRecord;
 //+---------------------+
 
 public class Message implements BytesSerializable{
-	MessageHeader header;
-	Question[] question;
+	public MessageHeader header;
+	public Question[] question;
 	/**
 	 * RRs answering the question
 	 */
-	ResourceRecord[] answer;
+	public ResourceRecord[] answer;
 	/**
 	 * RRs pointing toward an authority
 	 */
-	ResourceRecord[] authority;
+	public ResourceRecord[] authority;
 	/**
 	 * RRs holding additional information
 	 */
-	ResourceRecord[] additional;
+	public ResourceRecord[] additional;
 	
 	/**
 	 * Default constructor, used mainly when creating a message from bytes (ex: new Message().fromBytes)
@@ -83,21 +83,10 @@ public class Message implements BytesSerializable{
 		question.QNAME = name;
 		question.QTYPE = type;
 		question.QCLASS = QClass.IN;
-		switch(type) {
-			case A:{						
-			}
-			case MX:{
-			}
-			case NS: {
-			}
-			default:
-				break;
-		}	
 	}
 
 	@Override
 	public List<Byte> toBytes() {
-		// TODO Auto-generated method stub
 		ArrayList<Byte> bytes = new ArrayList<>();
 		bytes.addAll(this.header.toBytes());
 		for(Question q : this.question) {
@@ -140,7 +129,6 @@ public class Message implements BytesSerializable{
 				default:
 					break;
 			}
-			System.exit(1);
 		}
 				
 		int index = 12; 

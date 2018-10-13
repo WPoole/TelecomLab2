@@ -19,7 +19,7 @@ public interface BytesSerializable {
 		for(byte b : bytes) {
 			values.add(b);
 		}
-		return values;		
+		return values;
 	}
 	default public byte[] toByteArray() {
 		List<Byte> bytesList = this.toBytes();
