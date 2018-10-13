@@ -125,16 +125,16 @@ public class DomainName {
 			// create the pointer
 			Pointer p = new Pointer(rawBytes[index], rawBytes[index+1]);
 			// decode the domain name at the pointer's offset ( recursive)
-			ParsingResult result = parseDomainName(rawBytes, p.offset);
+			ParsingResult<String> result = parseDomainName(rawBytes, p.offset);
 			domainName.append(result.result);
 			// NOTE: we used only two bytes! (since it was a pointer)
 			bytesUsed += 2;
 		}
 
-		return new ParsingResult(domainName.toString(), bytesUsed);
+		return new ParsingResult<String>(domainName.toString(), bytesUsed);
 	}
 
-	private static ParsingResult parseLabel(byte[] rawBytes, int offset) throws InvalidFormatException {
+	private static ParsingResult<String> parseLabel(byte[] rawBytes, int offset) throws InvalidFormatException {
 		assert isLabel(rawBytes[offset]);
 		// read the 'length' byte, and move the pointer to the next byte.
 		int length = rawBytes[offset++];
@@ -150,7 +150,7 @@ public class DomainName {
 		// we used one byte per char, plus the length byte at the start.
 		String result = word.toString();
 		int bytesUsed = 1 + result.length();
-		return new ParsingResult(result, bytesUsed);
+		return new ParsingResult<String>(result, bytesUsed);
 	}
 
 	private static boolean isASCII(char c) {
