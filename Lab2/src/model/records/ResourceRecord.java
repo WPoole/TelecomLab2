@@ -82,10 +82,15 @@ public abstract class ResourceRecord implements BytesSerializable {
 			+ this.RDLENGTH;
 	}
 
-	public static ResourceRecord fromBytes(byte[] bytes) throws InvalidFormatException {
+	public static ResourceRecord fromBytes(byte[] bytes, int offset) throws InvalidFormatException {
 		ResourceRecord rr;
-		ByteBuffer buffer = ByteBuffer.wrap(bytes).asReadOnlyBuffer();
-		ParsingResult<String> name = DomainName.parseDomainName(bytes, 0);
+		ByteBuffer buffer = ByteBuffer.wrap(bytes, offset, bytes.length - offset).asReadOnlyBuffer();
+		
+		ParsingResult<String> name = DomainName.parseDomainName(bytes, offset);
+		byte[] nameBytes = new byte[name.bytesUsed];
+		// copy the bytes of the 'NAME' field into the nameBytes array.
+		buffer.get(nameBytes);
+		
 		// parse the TYPE, CLASS, TTL, and RDLength, which are fixed-length fields.
 		Type type = Type.fromBytes(buffer.get(), buffer.get());
 
@@ -106,8 +111,7 @@ public abstract class ResourceRecord implements BytesSerializable {
 			rr = null;
 			break;
 		}
-		rr.NAME = new byte[name.bytesUsed];
-		buffer.get(rr.NAME); // copy the 'NAME' bytes to the "NAME" field.
+		rr.NAME = nameBytes;
 		rr.nameString = name.result;
 		
 		

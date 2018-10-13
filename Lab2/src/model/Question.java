@@ -59,14 +59,15 @@ public class Question implements BytesSerializable {
 		return this.qNameBytes.length + 4;
 	}
 
-	public static Question fromBytes(byte[] rawBytes) throws InvalidFormatException {
+	public static Question fromBytes(byte[] rawBytes, int offset) throws InvalidFormatException {
 		Question question = new Question();
-		ByteBuffer buffer = ByteBuffer.wrap(rawBytes).asReadOnlyBuffer();
-		ParsingResult<String> result = DomainName.parseDomainName(rawBytes);
-		question.QNAME = result.result;
+		ByteBuffer buffer = ByteBuffer.wrap(rawBytes, offset, rawBytes.length-offset).asReadOnlyBuffer();
+		ParsingResult<String> domainName = DomainName.parseDomainName(rawBytes, offset);
 		
-		question.qNameBytes = new byte[result.bytesUsed];
+		question.qNameBytes = new byte[domainName.bytesUsed];
 		buffer.get(question.qNameBytes);
+
+		question.QNAME = domainName.result;
 		question.QTYPE = Type.fromBytes(buffer.get(), buffer.get());
 		question.QCLASS = QClass.fromBytes(buffer.get(), buffer.get());
 		

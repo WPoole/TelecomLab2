@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.nio.charset.Charset;
@@ -106,16 +107,55 @@ public class Message implements BytesSerializable{
 	
 	
 	public static Message fromBytes(byte[] bytes) throws InvalidFormatException {
-		Message m = new Message();
 		ByteBuffer buffer = ByteBuffer.wrap(bytes).asReadOnlyBuffer();
 		
-		// bytes 0 to 12 (exclusive) are the header bytes.
+		// create the Message instance.
+		Message m = new Message();
+
+		// First 12 bytes are the header bytes.
 		byte[] headerBytes = new byte[12];
 		buffer.get(headerBytes);
-		m.header = MessageHeader.fromBytes(headerBytes);
 		
-		if(m.header.RCODE != ResponseCode.NO_ERROR) {
-			switch(m.header.RCODE) {
+		m.header = MessageHeader.fromBytes(headerBytes);
+		m.checkHeaderResponseCode();
+		
+		int index = 12;
+		
+		int questionCount = m.header.QDCOUNT;
+		m.question = new Question[questionCount];
+		for(int i=0; i<questionCount; i++) {
+			// TODO: parse the domain names, while also keeping track of how many bytes were read.
+			Question newQuestion = Question.fromBytes(bytes, index);
+			index += newQuestion.length();
+		}
+		
+		m.answer = new ResourceRecord[m.header.ANCOUNT];
+		for(int i=0; i<m.header.ANCOUNT; i++) {
+			ResourceRecord rr = ResourceRecord.fromBytes(bytes, index);
+			index += rr.length();
+			m.answer[i] = rr;
+		}
+		
+		m.authority = new ResourceRecord[m.header.NSCOUNT];
+		for(int i=0; i<m.header.NSCOUNT; i++) {
+			ResourceRecord rr = ResourceRecord.fromBytes(bytes, index);
+			index += rr.length();
+			m.answer[i] = rr;
+		}
+		
+		m.additional = new ResourceRecord[m.header.ARCOUNT];
+		for(int i=0; i<m.header.ARCOUNT; i++) {
+			ResourceRecord rr = ResourceRecord.fromBytes(bytes, index);
+			index += rr.length();
+			m.answer[i] = rr;
+		}
+		
+		return m;
+	}
+	
+	private void checkHeaderResponseCode() {
+		if(this.header.RCODE != ResponseCode.NO_ERROR) {
+			switch(this.header.RCODE) {
 				case FORMAT_ERROR:
 					System.err.println("ERROR \t The name server was unable to interpret the query.");
 				case NAME_ERROR:
@@ -130,22 +170,7 @@ public class Message implements BytesSerializable{
 					break;
 			}
 		}
-				
-		int index = 12; 
-		byte[] bytesLeft = Arrays.copyOfRange(bytes,  index, bytes.length);
-		
-		
-		int questionCount = m.header.QDCOUNT;
-		m.question = new Question[questionCount];
-		for(int i=0; i<questionCount; i++) {
-			// TODO: parse the domain names, while also keeping track of how many bytes were read.
-			Question newQuestion = Question.fromBytes(bytesLeft);
-			index += newQuestion.length();
-		}
-		// TODO: implement the rest.
-		
-		return m;
-		
 	}
+	
 }
 
