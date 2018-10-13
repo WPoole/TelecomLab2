@@ -24,7 +24,7 @@ public class DomainName {
 		 * (which isn't a '.') plus one byte for the zero-length at the end. (This is
 		 * also equivalent to the length of the original string + 2).
 		 */
-		String[] words = domainName.split(".");
+		String[] words = domainName.split("\\.");
 		int numberOfChars = domainName.replace(".", "").length();
 		int bytesNeeded = words.length + numberOfChars + 1;
 
