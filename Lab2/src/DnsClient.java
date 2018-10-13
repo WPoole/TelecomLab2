@@ -1,15 +1,9 @@
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-
 import model.Message;
-import model.errors.InvalidFormatException;
 import model.records.ResourceRecord;
-import utils.Conversion;
 
 public class DnsClient {
 	// Fields.
@@ -31,7 +25,8 @@ public class DnsClient {
 			// socket.
 			InetAddress dnsAddress = InetAddress.getByAddress(input.dnsServerIp);
 			DatagramPacket udpPacket = new DatagramPacket(data, data.length, dnsAddress, input.port);
-			DatagramSocket socket = createSocket(input.dnsServerIp, input.port, input.timeout);
+			DatagramSocket socket = new DatagramSocket(); // Create Datagram Socket.
+			socket.setSoTimeout(input.timeout * 1000); // Set timeout. // Get DNS server IP address object.
 
 			// Send packet to DNS server.
 			socket.send(udpPacket);
@@ -74,32 +69,4 @@ public class DnsClient {
 			e.printStackTrace();
 		}
 	}
-
-	private static DatagramSocket createSocket(byte[] serverIp, int serverPort, int timeout)
-			throws SocketException, UnknownHostException {
-		DatagramSocket clientSocket = new DatagramSocket(); // Create Datagram Socket.
-		clientSocket.setSoTimeout(timeout * 1000); // Set timeout. // Get DNS server IP address object.
-		return clientSocket;
-	}
-
-	private static void sendData(DatagramSocket socket, byte[] data, byte[] dnsServerIp, int dnsServerPort) {
-
-	}
-
-	
-
-	private static Message parseResponsePacket(DatagramPacket responsePacket) {
-		byte[] responseBytes = responsePacket.getData();
-		try {
-			Message responseMessage = Message.fromBytes(responseBytes);
-			return responseMessage;
-		} catch (InvalidFormatException e) {
-			System.err.println("ERROR\t Error while parsing the response packet:" + e);
-			e.printStackTrace();
-			System.exit(1);
-		}
-		return null;
-
-	}
-
 }
