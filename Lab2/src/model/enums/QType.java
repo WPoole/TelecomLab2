@@ -9,7 +9,7 @@ import model.BytesSerializable;
 import model.errors.InvalidFormatException;
 import utils.Conversion;
 
-public enum QueryType {
+public enum QType{
 	/** A request for a transfer of an entire zone */
 	AXFR(252),
 	/** A request for mailbox-related records (MB, MG or MR) */
@@ -20,7 +20,7 @@ public enum QueryType {
 	ALL(255);
 	public final int value;
 
-	private QueryType(int value) {
+	private QType(int value) {
 		this.value = value;
 	}
 	public List<Byte> toBytes() {
@@ -31,7 +31,7 @@ public enum QueryType {
 		}
 		return result;
 	}
-	public static QueryType fromBytes(byte byte1, byte byte2) throws InvalidFormatException {
+	public static QType fromBytes(byte byte1, byte byte2) throws InvalidFormatException {
 		String concat = Conversion.binaryString(byte1) + Conversion.binaryString(byte2);
 		int value = Integer.parseInt(concat, 2);
 		switch(value) {
@@ -44,7 +44,7 @@ public enum QueryType {
 			case 255:
 				return ALL;
 			default:
-				throw new InvalidFormatException("Unrecognized QueryClass value: '"+ concat + "'.");
+				throw new InvalidFormatException("Unrecognized QType value: '"+ concat + "'.");
 		}
 	}
 }

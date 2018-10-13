@@ -1,10 +1,8 @@
 package model.enums;
 
-import java.nio.ByteBuffer;
-
 import utils.Conversion;
 
-public enum QueryClass {
+public enum QClass {
 	/** the Internet*/
 	IN (1),
 	/** the CSNET class (Obsolete - used only for examples in
@@ -20,11 +18,11 @@ public enum QueryClass {
 	HS (4),
 	ALL (255);
 	public final int value;
-	private QueryClass(int value){
+	private QClass(int value){
 		this.value = value;
 	}
 	
-	public static QueryClass fromBytes(byte byte1, byte byte2) {
+	public static QClass fromBytes(byte byte1, byte byte2) {
 		String concat = Conversion.binaryString(byte1) + Conversion.binaryString(byte2);
 		int value = Integer.parseInt(concat, 2);
 		switch(value) {

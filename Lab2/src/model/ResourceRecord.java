@@ -4,11 +4,12 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 
-import model.enums.ResourceRecordClass;
-import model.enums.ResourceRecordType;
+import model.enums.QClass;
+import model.enums.Type;
 import model.errors.InvalidFormatException;
 import utils.Conversion;
 import utils.DomainName;
+import utils.ParsingResult;
 
 class ResourceRecord implements BytesSerializable {
 	/**
@@ -25,11 +26,11 @@ class ResourceRecord implements BytesSerializable {
 	 * two octets containing one of the RR type codes. This field specifies the
 	 * meaning of the data in the RDATA field.
 	 */
-	ResourceRecordType TYPE;
+	Type TYPE;
 	/**
 	 * two octets which specify the class of the data in the RDATA field.
 	 */
-	ResourceRecordClass CLASS;
+	QClass CLASS;
 	/**
 	 * a 32 bit unsigned integer that specifies the time interval (in seconds) that
 	 * the resource record may be cached before it should be discarded. Zero values
@@ -57,32 +58,44 @@ class ResourceRecord implements BytesSerializable {
 	}
 
 	@Override
-	public void fromBytes(byte[] bytes){
+	public void fromBytes(byte[] bytes) {
+		
+		
+		
+		
 		try {
-		// TODO: set the 'this.TYPE' using the bits of the RR.
-		// TODO: do something like this, after the TYPE has been set.
-		switch (this.TYPE) {
-		case A: {
-			this.nameString = null; // the IP address is in RDATA.
-			break;
-		}
-		case CNAME: {
-			this.nameString = DomainName.parseDomainName(this.RDATA).string;
-			break;
-		}
-		case MX: {
-			this.nameString = DomainName.parseDomainName(this.RDATA, 2).string;
-			this.preference = ByteBuffer.wrap(this.RDATA).getShort();
-			break;
-		}
-		case NS: {
-			this.nameString = DomainName.parseDomainName(this.RDATA, 0).string;
-			break;
-		}
-		default:
-			break;
-		}
-		}catch(InvalidFormatException e) {
+			ParsingResult name = DomainName.parseDomainName(bytes, 0);
+			int index = name.bytesUsed;
+			this.nameString = name.string;
+			
+			// TODO: parse the TYPE, CLASS, TTL, and RDLength, which are fixed-length fields.
+			
+			
+			
+			// TODO: set the 'this.TYPE' using the bits of the RR.
+			// TODO: do something like this, after the TYPE has been set.
+			switch (this.TYPE) {
+			case A: {
+				this.nameString = null; // the IP address is in RDATA.
+				break;
+			}
+			case CNAME: {
+				this.nameString = DomainName.parseDomainName(this.RDATA).string;
+				break;
+			}
+			case MX: {
+				this.nameString = DomainName.parseDomainName(this.RDATA, 2).string;
+				this.preference = ByteBuffer.wrap(this.RDATA).getShort();
+				break;
+			}
+			case NS: {
+				this.nameString = DomainName.parseDomainName(this.RDATA, 0).string;
+				break;
+			}
+			default:
+				break;
+			}
+		} catch (InvalidFormatException e) {
 			System.err.println("Unable to parse the resourceRecord: " + e);
 			System.exit(1);
 		}

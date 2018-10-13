@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.ArrayList;
+
 import model.enums.*;
 
 public class Conversion {
@@ -31,4 +33,26 @@ public class Conversion {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public static byte[] ipAddressStringToByteArray(String ipAddressString) {
+		String[] serverIpComponents = ipAddressString.split(".");
+		byte[] serverIpAddressInBytes = new byte[serverIpComponents.length];
+		for(int i = 0; i < serverIpComponents.length; i++) {
+			// Note: The below line should not throw any exceptions since we already did all necessary
+			// checks when forming the InputData object.
+			serverIpAddressInBytes[i] = (byte) (Integer.parseInt(serverIpComponents[i]));
+		}
+
+		return serverIpAddressInBytes;
+	}
+	
+	public static <T> ArrayList<T> arrayToArrayList(T[] array){
+		ArrayList<T> result = new ArrayList<T>();
+		for(T element : array){
+			result.add(element);
+		}
+		return result;
+	}
+	
+	
 }

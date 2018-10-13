@@ -7,6 +7,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 import model.Message;
+import utils.Conversion;
 
 public class DnsClient {
 	// Fields.
@@ -27,7 +28,6 @@ public class DnsClient {
 
 	}
 
-	@SuppressWarnings("resource")
 	private static void sendMessage(InputData inputData) throws IOException {
 		// DatagramSockets are Java's way of performing network communication over UDP.
 		DatagramSocket clientSocket = new DatagramSocket(); // Create Datagram Socket.
@@ -35,7 +35,7 @@ public class DnsClient {
 
 		Message queryMessage = new Message(); // Create message object to send. TODO: Message constructor still needs to be made.
 
-		byte[] dnsServerIpAddressInBytes = getServerIpAddressInBytes(inputData.server); // Get byte array representation of server IP address.
+		byte[] dnsServerIpAddressInBytes = Conversion.ipAddressStringToByteArray(inputData.dnsServerIp);
 		InetAddress dnsServerIp = InetAddress.getByAddress(dnsServerIpAddressInBytes); // Get DNS server IP address object.
 
 		// Need to create datagram packet object to send queryMessage via datagram socket.
@@ -52,41 +52,34 @@ public class DnsClient {
 
 		// Attempt to receive response from DNS server, keeping in mind the number of max retries that got set.
 		boolean didReceiveResponse = false;
-		for(int i = 0; i < inputData.maxRetries; i++) {
+		for(int i = 0; i < inputData.maxRetries && !didReceiveResponse; i++) {
 			try {
 				clientSocket.receive(responsePacket); // Receive response. Will block until timeout occurs.
 				didReceiveResponse = true;
-				break;
 			} catch (SocketTimeoutException t) {
-				continue;
+				System.out.println("Timeout " + i + "/" + inputData.maxRetries);
 			}
 		}
+		// Close socket.
+		clientSocket.close();
 		
 		// Check whether we received data or not. If we did, parse it. Otherwise, throw an exception and display error message.		
 		if(didReceiveResponse) {
-			parseMessageResponse(responsePacket);
+			parseResponsePacket(responsePacket);
 		} else {
 			throw new SocketTimeoutException("Exceeded maximum number of retries.");
 		}
 		
-		// Close socket.
-		clientSocket.close();
 	}
 	
-	private static void parseMessageResponse(DatagramPacket responsePacket) {
+	private static Message parseResponsePacket(DatagramPacket responsePacket) {
+		byte[] responseBytes = responsePacket.getData();
+		Message responseMessage = new Message();
+		responseMessage.fromBytes(responseBytes);
+		return responseMessage;
 		
 	}
 
-	private static byte[] getServerIpAddressInBytes(String serverIp) {
-		String[] serverIpComponents = serverIp.split(".");
-		byte[] serverIpAddressInBytes = new byte[serverIpComponents.length];
-		for(int i = 0; i < serverIpComponents.length; i++) {
-			// Note: The below line should not throw any exceptions since we already did all necessary
-			// checks when forming the InputData object.
-			serverIpAddressInBytes[i] = (byte) (Integer.parseInt(serverIpComponents[i]));
-		}
-
-		return serverIpAddressInBytes;
-	}
+	
 
 }
