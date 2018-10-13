@@ -61,10 +61,7 @@ public class Message implements BytesSerializable{
 	 * @param name
 	 */
 	public Message(Type type, byte[] dnsServerIpAddress, String name) {
-		
 		// TODO: populate all the fields correctly.
-		
-		
 		
 		this.header = new MessageHeader();
 		this.header.ID = MessageHeader.defaultId; // some integer we always use.
@@ -81,7 +78,7 @@ public class Message implements BytesSerializable{
 		this.header.ARCOUNT = 0; // same here also.
 		
 
-		QuestionEntry question = new QuestionEntry();
+		Question question = new Question();
 		// TODO: Double-check this, but as far as I know, this behavior seems common to all three types (A, MX, NS).
 		question.QNAME = name;
 		question.QTYPE = type;
@@ -117,16 +114,19 @@ public class Message implements BytesSerializable{
 		}
 		return bytes;
 	}
-
-	@Override
-	public void fromBytes(byte[] bytes) {
-		// bytes 0 to 12 (exclusive) are the header bytes.
-		byte[] headerBytes = Arrays.copyOfRange(bytes,  0, 12);
-		this.header = new MessageHeader();
-		this.header.fromBytes(headerBytes);
+	
+	
+	public static Message fromBytes(byte[] bytes) throws InvalidFormatException {
+		Message m = new Message();
+		ByteBuffer buffer = ByteBuffer.wrap(bytes).asReadOnlyBuffer();
 		
-		if(this.header.RCODE != ResponseCode.NO_ERROR) {
-			switch(this.header.RCODE) {
+		// bytes 0 to 12 (exclusive) are the header bytes.
+		byte[] headerBytes = new byte[12];
+		buffer.get(headerBytes);
+		m.header = MessageHeader.fromBytes(headerBytes);
+		
+		if(m.header.RCODE != ResponseCode.NO_ERROR) {
+			switch(m.header.RCODE) {
 				case FORMAT_ERROR:
 					System.err.println("ERROR \t The name server was unable to interpret the query.");
 				case NAME_ERROR:
@@ -147,15 +147,16 @@ public class Message implements BytesSerializable{
 		byte[] bytesLeft = Arrays.copyOfRange(bytes,  index, bytes.length);
 		
 		
-		int questionCount = this.header.QDCOUNT;
-		this.question = new QuestionEntry[questionCount];
+		int questionCount = m.header.QDCOUNT;
+		m.question = new Question[questionCount];
 		for(int i=0; i<questionCount; i++) {
 			// TODO: parse the domain names, while also keeping track of how many bytes were read.
-			QuestionEntry newQuestion = new QuestionEntry();
-			newQuestion.fromBytes(bytesLeft);
-			int bytesUsed = newQuestion.bytesUsed;
-			index += bytesUsed;
+			Question newQuestion = Question.fromBytes(bytesLeft);
+			index += newQuestion.length();
 		}
+		// TODO: implement the rest.
+		
+		return m;
 		
 	}
 }

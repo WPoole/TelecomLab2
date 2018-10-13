@@ -7,6 +7,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 import model.Message;
+import model.errors.InvalidFormatException;
 import utils.Conversion;
 
 public class DnsClient {
@@ -74,9 +75,15 @@ public class DnsClient {
 	
 	private static Message parseResponsePacket(DatagramPacket responsePacket) {
 		byte[] responseBytes = responsePacket.getData();
-		Message responseMessage = new Message();
-		responseMessage.fromBytes(responseBytes);
-		return responseMessage;
+		try {
+			Message responseMessage = Message.fromBytes(responseBytes);
+			return responseMessage;
+		} catch (InvalidFormatException e) {
+			System.err.println("ERROR\t Error while parsing the response packet:" + e);
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return null;
 		
 	}
 
