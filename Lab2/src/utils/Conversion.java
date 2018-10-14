@@ -33,7 +33,7 @@ public class Conversion {
 	}
 	
 	public static byte[] ipAddressStringToByteArray(String ipAddressString) {
-		String[] serverIpComponents = ipAddressString.split(".");
+		String[] serverIpComponents = ipAddressString.split("\\.");
 		byte[] serverIpAddressInBytes = new byte[serverIpComponents.length];
 		for(int i = 0; i < serverIpComponents.length; i++) {
 			// Note: The below line should not throw any exceptions since we already did all necessary
