@@ -8,7 +8,7 @@ public class InputData {
 	int timeout = 5; // Gives how long to wait, in seconds, before retransmitting an unanswered query.
 	int maxRetries = 3; // Max number of times to retransmit an unanswered query before giving up.
 	int port = 53; // UDP port number of the DNS server.
-	Type type = null; // Indicates what type of query to send to the DNS server (MX, NS, or A).
+	Type type = Type.NONE; // Indicates what type of query to send to the DNS server (MX, NS, or A).
 
 	// These both need to be set.
 	byte[] dnsServerIp; // IP address of DNS server we are contacting.
@@ -82,21 +82,28 @@ public class InputData {
 		// We only go to args.length - 1 to avoid index out of bounds exceptions. This is fine because
 		// The last argument should be the name anyways which is unrelated to other input arguments.
 		for(int i = 0; i < args.length - 1; i++) {
-			// If the type is already set, then we know there must be duplicate type flags in the input,
-			// which is not allowed.
-			if(this.type != null) {
-				throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - There cannot be more than one type flag in the input.");
-			}
+
 			if(args[i].equals("-mx")) {
+				// If the type is already set, then we know there must be duplicate type flags in the input,
+				// which is not allowed.
+				if(this.type != Type.NONE) {
+					throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - There cannot be more than one type flag in the input.");
+				}
+
 				this.type = Type.MX;
 
 			} else if(args[i].equals("-ns")) {
+				if(this.type != Type.NONE) {
+					throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - There cannot be more than one type flag in the input.");
+				}
 				this.type = Type.NS;
 			}
 		}
-
+		
 		// If no -mx or -ns flag is found we set type field to default value specified in assignment.
-		this.type = Type.A;
+		if(this.type == Type.NONE) {
+			this.type = Type.A;
+		}
 	}
 
 	private void setServer(String[] args) {
@@ -109,7 +116,7 @@ public class InputData {
 				if(this.dnsServerIp != null) {
 					throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - There cannot be more than one server IP address in the input.");
 				}
-				
+
 				String serverIp = args[i].substring(1);
 				// Need to check if this is a valid IP address format.
 				if(isValidIpFormat(serverIp)) {

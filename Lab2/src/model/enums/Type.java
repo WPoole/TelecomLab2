@@ -6,6 +6,8 @@ import model.errors.InvalidFormatException;
 import utils.Conversion;
 
 public enum Type {
+	/** default state of type of request before one gets set */
+	NONE(0),
 	/** a host address */
 	A(1),
 	/** an authoritative name server */
