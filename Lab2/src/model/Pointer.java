@@ -16,7 +16,7 @@ public class Pointer {
 	}
 	public byte[] toBytes() {
 		return new byte[] {
-			(byte)(0b11000000 | (offset << 8)),
+			(byte)(0b11000000 | (offset >> 8)),
 			(byte)(0xFF & offset),
 		};
 	}
