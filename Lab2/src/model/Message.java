@@ -100,7 +100,6 @@ public class Message implements BytesSerializable{
 		buffer.get(headerBytes);
 		
 		m.header = MessageHeader.fromBytes(headerBytes);
-		m.checkHeaderResponseCode();
 		
 		int index = 12;
 		
@@ -136,22 +135,24 @@ public class Message implements BytesSerializable{
 		return m;
 	}
 	
-	private void checkHeaderResponseCode() {
-		if(this.header.RCODE != ResponseCode.NO_ERROR) {
-			switch(this.header.RCODE) {
-				case FORMAT_ERROR:
-					System.err.println("ERROR \t The name server was unable to interpret the query.");
-				case NAME_ERROR:
-					System.err.println("ERROR \t The domain name referenced in the query does not exist.");
-				case SERVER_FAILURE:
-					System.err.println("ERROR \t The name server was unable to process this query due to a problem with the name server.");
-				case REFUSED:
-					System.err.println("ERROR \t The name server refuses to perform the specified operation for policy reasons.");
-				case NOT_IMPLEMENTED:
-					System.err.println("ERROR \t The name server does not support the requested kind of query.");
-				default:
-					break;
-			}
+	public boolean isErrorResponse() {
+		return this.header.RCODE != ResponseCode.NO_ERROR;
+	}
+	
+	public String getHeaderResponseCodeDescription() {
+		switch(this.header.RCODE) {
+			case FORMAT_ERROR:
+				return this.header.RCODE.name() + ": The name server was unable to interpret the query.";
+			case NAME_ERROR:
+				return this.header.RCODE.name() + ": The domain name referenced in the query does not exist.";
+			case SERVER_FAILURE:
+				return this.header.RCODE.name() + ": The name server was unable to process this query due to a problem with the name server.";
+			case REFUSED:
+				return this.header.RCODE.name() + ": The name server refuses to perform the specified operation for policy reasons.";
+			case NOT_IMPLEMENTED:
+				return this.header.RCODE.name() + ": The name server does not support the requested kind of query.";
+			default:
+				return null;
 		}
 	}
 	
