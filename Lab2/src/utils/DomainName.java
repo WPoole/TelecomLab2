@@ -1,8 +1,5 @@
 package utils;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-
 import model.Pointer;
 import model.errors.InvalidFormatException;
 
@@ -82,29 +79,30 @@ public class DomainName {
 	private static boolean isNullLabel(byte b) {
 		return b == 0;
 	}
-	
-	public static ParsingResult<String> parseDomainName(byte[] rawBytes) throws InvalidFormatException{
+
+	public static ParsingResult<String> parseDomainName(byte[] rawBytes) throws InvalidFormatException {
 		return parseDomainName(rawBytes, 0);
 	}
-	
+
 	/**
-	 * Decode a (possibly compressed) sequence of labels. Returns both the resulting String and the number of bytes
-	 * used to produce it.
+	 * Decode a (possibly compressed) sequence of labels. Returns both the resulting
+	 * String and the number of bytes used to produce it.
 	 * 
 	 * @param rawBytes
 	 * @param startingOffset
 	 * @return
 	 * @throws InvalidFormatException
 	 */
-	public static ParsingResult<String> parseDomainName(byte[] rawBytes, int startingOffset) throws InvalidFormatException{
-		assert isLabel(rawBytes[startingOffset]);
-
+	public static ParsingResult<String> parseDomainName(byte[] rawBytes, int startingOffset)
+			throws InvalidFormatException {
 		StringBuilder domainName = new StringBuilder();
 		int index = startingOffset;
 		int bytesUsed = 0;
 		int wordCount = 0;
+		boolean startsWithLabels = false;
 		// while the current position is a (non-empty) label
 		while (isLabel(rawBytes[index])) {
+			startsWithLabels = true;
 			if (wordCount != 0) {
 				// add the '.' between words
 				domainName.append(".");
@@ -119,11 +117,12 @@ public class DomainName {
 		if (isNullLabel(rawBytes[index])) {
 			bytesUsed += 1;
 		} else if (isPointer(rawBytes[index])) {
-			// TODO: comment/uncomment the following to try to read the compressed domain name.
-			// throw new InvalidFormatException("Pointers aren't handled yet!");
-			
+			// if this pointer comes after a label sequence, then we add a '.' to the string so far.
+			if (startsWithLabels) {
+				domainName.append('.');
+			}
 			// create the pointer
-			Pointer p = new Pointer(rawBytes[index], rawBytes[index+1]);
+			Pointer p = new Pointer(rawBytes[index], rawBytes[index + 1]);
 			// decode the domain name at the pointer's offset ( recursive)
 			ParsingResult<String> result = parseDomainName(rawBytes, p.offset);
 			domainName.append(result.result);

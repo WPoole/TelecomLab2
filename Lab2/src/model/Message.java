@@ -1,35 +1,12 @@
 package model;
 
-import java.io.Serializable;
-import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
-import java.nio.ShortBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import org.junit.platform.commons.util.StringUtils;
 
 import model.enums.*;
 import model.errors.InvalidFormatException;
 import model.records.ResourceRecord;
-import utils.Conversion;
-import utils.DomainName;
-import utils.ParsingResult;
-import model.records.ResourceRecord;
-//+---------------------+
-//|        Header       |
-//+---------------------+
-//|       Question      | the question for the name server
-//+---------------------+
-//|        Answer       | RRs answering the question
-//+---------------------+
-//|      Authority      | RRs pointing toward an authority
-//+---------------------+
-//|      Additional     | RRs holding additional information
-//+---------------------+
 
 public class Message implements BytesSerializable{
 	public MessageHeader header;
