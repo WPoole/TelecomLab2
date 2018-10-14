@@ -52,7 +52,11 @@ public abstract class ResourceRecord implements BytesSerializable {
 	 * field is a 4 octet ARPA Internet address.
 	 */
 	byte[] RDATA;
-
+	
+	/**
+	 * Is set to true if the Message Header's AA flag is true.
+	 */
+	boolean isAuthoritative;
 	@Override
 	public byte[] toByteArray() {
 		this.NAME = DomainName.toBytes(this.nameString);
@@ -82,7 +86,7 @@ public abstract class ResourceRecord implements BytesSerializable {
 			+ this.RDLENGTH;
 	}
 
-	public static ResourceRecord fromBytes(byte[] bytes, int offset) throws InvalidFormatException {
+	public static ResourceRecord fromBytes(byte[] bytes, int offset, boolean isAuthoritative) throws InvalidFormatException {
 		ResourceRecord rr;
 		ByteBuffer buffer = ByteBuffer.wrap(bytes, offset, bytes.length - offset).asReadOnlyBuffer();
 		
@@ -111,6 +115,7 @@ public abstract class ResourceRecord implements BytesSerializable {
 			rr = null;
 			break;
 		}
+		rr.isAuthoritative = isAuthoritative;
 		rr.NAME = nameBytes;
 		rr.nameString = name.result;
 		

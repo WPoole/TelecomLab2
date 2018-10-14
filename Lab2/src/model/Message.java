@@ -113,21 +113,21 @@ public class Message implements BytesSerializable{
 		
 		m.answer = new ResourceRecord[m.header.ANCOUNT];
 		for(int i=0; i<m.header.ANCOUNT; i++) {
-			ResourceRecord rr = ResourceRecord.fromBytes(bytes, index);
+			ResourceRecord rr = ResourceRecord.fromBytes(bytes, index, m.header.AA);
 			index += rr.length();
 			m.answer[i] = rr;
 		}
 		
 		m.authority = new ResourceRecord[m.header.NSCOUNT];
 		for(int i=0; i<m.header.NSCOUNT; i++) {
-			ResourceRecord rr = ResourceRecord.fromBytes(bytes, index);
+			ResourceRecord rr = ResourceRecord.fromBytes(bytes, index, m.header.AA);
 			index += rr.length();
 			m.authority[i] = rr;
 		}
 		
 		m.additional = new ResourceRecord[m.header.ARCOUNT];
 		for(int i=0; i<m.header.ARCOUNT; i++) {
-			ResourceRecord rr = ResourceRecord.fromBytes(bytes, index);
+			ResourceRecord rr = ResourceRecord.fromBytes(bytes, index, m.header.AA);
 			index += rr.length();
 			m.additional[i] = rr;
 		}

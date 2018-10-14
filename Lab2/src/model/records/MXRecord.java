@@ -43,7 +43,7 @@ public class MXRecord extends ResourceRecord {
 		output.append(this.preference);
 		output.append(this.TTL);
 		output.append('\t');
-		output.append("[TODO: Auth | no-auth]");
+		output.append(this.isAuthoritative ? "Auth" : "no-auth");
 		return output.toString();
 	}
 

@@ -34,7 +34,7 @@ public class NSRecord extends ResourceRecord {
 		output.append('\t');
 		output.append(this.TTL);
 		output.append('\t');
-		output.append("[TODO: Auth | no-auth]");
+		output.append(this.isAuthoritative ? "Auth" : "no-auth");
 		return output.toString();
 	}
 }
