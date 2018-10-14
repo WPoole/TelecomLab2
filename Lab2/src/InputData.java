@@ -115,7 +115,7 @@ public class InputData {
 					this.dnsServerIp = Conversion.ipAddressStringToByteArray(serverIp);
 					return;
 				} else {
-					throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - Please enter a valid server IP address.");
+					throw new IllegalArgumentException("ERROR\t Incorrect Input Syntax - Please enter a valid server IP address. (received "+ serverIp + ")");
 				}
 			}
 		}
@@ -141,7 +141,7 @@ public class InputData {
 	}
 
 	public static boolean isValidIpFormat(String serverIp) {
-		String[] ipComponents = serverIp.split(".");
+		String[] ipComponents = serverIp.split("\\.");
 		if(ipComponents.length != 4) { // There should be 4 numbers in each IP address.
 			return false;
 		}

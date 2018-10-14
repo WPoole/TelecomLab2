@@ -10,7 +10,7 @@ import model.records.ResourceRecord;
 
 public class Message implements BytesSerializable{
 	public MessageHeader header;
-	public Question[] question;
+	public Question[] questions;
 	/**
 	 * RRs answering the question
 	 */
@@ -56,18 +56,24 @@ public class Message implements BytesSerializable{
 		this.header.ARCOUNT = 0; // same here also.
 		
 
+		this.questions = new Question[1];
 		Question question = new Question();
 		// TODO: Double-check this, but as far as I know, this behavior seems common to all three types (A, MX, NS).
 		question.QNAME = name;
 		question.QTYPE = type;
-		question.QCLASS = QClass.IN;
+		question.QCLASS = QClass.IN;		
+		this.questions[0] = question;
+		
+		this.answer = new ResourceRecord[0];
+		this.authority = new ResourceRecord[0];
+		this.additional = new ResourceRecord[0];
 	}
 
 	@Override
 	public List<Byte> toBytes() {
 		ArrayList<Byte> bytes = new ArrayList<>();
 		bytes.addAll(this.header.toBytes());
-		for(Question q : this.question) {
+		for(Question q : this.questions) {
 			bytes.addAll(q.toBytes());
 		}
 		for(ResourceRecord rr : this.answer) {
@@ -99,7 +105,7 @@ public class Message implements BytesSerializable{
 		int index = 12;
 		
 		int questionCount = m.header.QDCOUNT;
-		m.question = new Question[questionCount];
+		m.questions = new Question[questionCount];
 		for(int i=0; i<questionCount; i++) {
 			// TODO: parse the domain names, while also keeping track of how many bytes were read.
 			Question newQuestion = Question.fromBytes(bytes, index);

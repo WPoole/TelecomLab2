@@ -10,6 +10,9 @@ public class DnsClient {
 
 	// Methods.
 	public static void main(String[] args) {
+
+		args = new String[]{ "@8.8.8.8", "www.mcgill.ca" };
+
 		// Program must be invoked according to following format:
 		// java DnsClient [-t timeout] [-r max-retries] [-p port] [-mx|-ns] @server name
 
@@ -48,19 +51,18 @@ public class DnsClient {
 					System.out.println("Timeout " + retries + "/" + input.maxRetries);
 				}
 			}
-			
+
 			// Close socket.
 			socket.close();
 
 			if (!didReceiveResponse) {
 				throw new SocketTimeoutException("ERROR\t Exceeded maximum number of retries.");
 			}
-			
+
 			System.out.println("Response received after [time] seconds (" + retries + " retries)");
-			
-			
+
 			Message response = Message.fromBytes(responsePacket.getData());
-			for(ResourceRecord rr : response.answer) {
+			for (ResourceRecord rr : response.answer) {
 				rr.printToConsole();
 			}
 
