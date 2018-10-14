@@ -138,8 +138,7 @@ public class MessageHeader implements BytesSerializable{
 	public static MessageHeader fromBytes(byte[] bytes){
 		MessageHeader header = new MessageHeader();
 		try {
-			ShortBuffer buffer = ByteBuffer.allocate(6 * 2).put(bytes)
-					.asShortBuffer().asReadOnlyBuffer();
+			ShortBuffer buffer = ByteBuffer.wrap(bytes).asShortBuffer().asReadOnlyBuffer();
 			header.ID = buffer.get();
 			String flags = Conversion.binaryString(buffer.get());
 			header.QR = flags.charAt(0) == '1';

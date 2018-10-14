@@ -19,7 +19,9 @@ public class DnsClient {
 		try {
 			// First thing we do is get input data set up properly and stored.
 			InputData input = new InputData(args);
-
+			System.out.println("DnsClient sending request for " + input.name);
+			System.out.println("Server: " + input.dnsServerIpString);
+			System.out.println("Request type: " + input.type.name());
 			// Create the message
 			Message m = new Message(input.type, input.dnsServerIp, input.name);
 			byte[] data = m.toByteArray();

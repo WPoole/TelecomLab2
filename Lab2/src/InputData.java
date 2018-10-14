@@ -12,6 +12,7 @@ public class InputData {
 
 	// These both need to be set.
 	byte[] dnsServerIp; // IP address of DNS server we are contacting.
+	String dnsServerIpString;
 	String name; // The domain name we are querying for.
 
 	// Constructor.
@@ -112,6 +113,7 @@ public class InputData {
 				String serverIp = args[i].substring(1);
 				// Need to check if this is a valid IP address format.
 				if(isValidIpFormat(serverIp)) {
+					this.dnsServerIpString = serverIp;
 					this.dnsServerIp = Conversion.ipAddressStringToByteArray(serverIp);
 					return;
 				} else {
