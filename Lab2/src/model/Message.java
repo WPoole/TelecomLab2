@@ -122,14 +122,14 @@ public class Message implements BytesSerializable{
 		for(int i=0; i<m.header.NSCOUNT; i++) {
 			ResourceRecord rr = ResourceRecord.fromBytes(bytes, index);
 			index += rr.length();
-			m.answer[i] = rr;
+			m.authority[i] = rr;
 		}
 		
 		m.additional = new ResourceRecord[m.header.ARCOUNT];
 		for(int i=0; i<m.header.ARCOUNT; i++) {
 			ResourceRecord rr = ResourceRecord.fromBytes(bytes, index);
 			index += rr.length();
-			m.answer[i] = rr;
+			m.additional[i] = rr;
 		}
 		
 		return m;
