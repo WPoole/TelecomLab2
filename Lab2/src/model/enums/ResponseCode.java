@@ -1,7 +1,5 @@
 package model.enums;
 
-import java.nio.ByteBuffer;
-
 import model.errors.InvalidFormatException;
 
 public enum ResponseCode {

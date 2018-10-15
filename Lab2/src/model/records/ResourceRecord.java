@@ -1,6 +1,7 @@
 package model.records;
 
 import java.nio.ByteBuffer;
+
 import model.BytesSerializable;
 import model.enums.QClass;
 import model.enums.Type;
@@ -15,48 +16,48 @@ public abstract class ResourceRecord implements BytesSerializable {
 	 * order two bits of every length octet must be zero, and the remaining six bits
 	 * of the length field limit the label to 63 octets or less."
 	 */
-	byte[] NAME;
+	public byte[] NAME;
 	/**
 	 * The human-readable domain name contained within the NAME field (ex: "www.mcgill.ca").
 	 */
-	String nameString;
+	public String nameString;
 	/**
 	 * The total byte-length of this RR. Used when reading through a sequence of RR's.
 	 */
-	int byteLength;
+	public int byteLength;
 	/**
 	 * two octets containing one of the RR type codes. This field specifies the
 	 * meaning of the data in the RDATA field.
 	 */
-	Type TYPE;
+	public Type TYPE;
 	/**
 	 * two octets which specify the class of the data in the RDATA field.
 	 */
-	QClass CLASS;
+	public QClass CLASS;
 	/**
 	 * a 32 bit unsigned integer that specifies the time interval (in seconds) that
 	 * the resource record may be cached before it should be discarded. Zero values
 	 * are interpreted to mean that the RR can only be used for the transaction in
 	 * progress, and should not be cached.
 	 */
-	long TTL;
+	public long TTL;
 	/**
 	 * an unsigned 16 bit integer that specifies the length in octets of the RDATA
 	 * field.
 	 */
-	int RDLENGTH;
+	public int RDLENGTH;
 	/**
 	 * a variable length string of octets that describes the resource. The format of
 	 * this information varies according to the TYPE and CLASS of the resource
 	 * record. For example, the if the TYPE is A and the CLASS is IN, the RDATA
 	 * field is a 4 octet ARPA Internet address.
 	 */
-	byte[] RDATA;
+	public byte[] RDATA;
 	
 	/**
 	 * Is set to true if the Message Header's AA flag is true.
 	 */
-	boolean isAuthoritative;
+	public boolean isAuthoritative;
 	@Override
 	public byte[] toByteArray() {
 		this.NAME = DomainName.toBytes(this.nameString);

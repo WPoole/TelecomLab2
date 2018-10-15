@@ -1,12 +1,7 @@
 package model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-
-import model.errors.InvalidFormatException;
-import utils.Conversion;
 
 /**
  * Interface which describes objects that can be serialized into a sequence of bytes.

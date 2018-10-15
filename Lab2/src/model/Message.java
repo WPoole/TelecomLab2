@@ -4,7 +4,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.enums.*;
+import model.enums.OpCode;
+import model.enums.QClass;
+import model.enums.ResponseCode;
+import model.enums.Type;
 import model.errors.InvalidFormatException;
 import model.records.ResourceRecord;
 

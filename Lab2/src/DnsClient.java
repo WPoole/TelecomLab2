@@ -3,14 +3,18 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+
 import model.Message;
 import model.errors.InvalidFormatException;
 import model.records.ResourceRecord;
 
 public class DnsClient {
 	public static void main(String[] args) {
-		args = new String[] { "–t", "10", "–r", "2", "–mx", "@8.8.8.8", "mcgill.ca" };
-//		args = new String[] { "@8.8.8.8", "www.mcgill.ca" };
+//		args = new String[] { "–t", "10", "–r", "2", "–mx", "@8.8.8.8", "mcgill.ca" };
+//		args = new String[] { "–mx", "@8.8.8.8", "yahoo.ca" };
+//		args = new String[] { "@8.8.8.8", "yahoo.ca" };
+//		args = new String[] { "@8.8.8.8", "yahoo.ca" };
+		args = new String[] { "@8.8.8.8", "www.mcgill.ca" };
 //		args = new String[] { "–t","10", "–r", "2", "–mx", "@8.8.8.8", "mcgill.ca" };
 //		args = new String[] { "–t","10", "–r", "2", "–mx", "@8.8.8.8", "mcgill.ca" };
 //		args = new String[] { "–t","10", "–r", "2", "–mx", "@8.8.8.8", "mcgill.ca" };
@@ -21,14 +25,7 @@ public class DnsClient {
 		// java DnsClient [-t timeout] [-r max-retries] [-p port] [-mx|-ns] @server name
 
 		try {
-			// First thing we do is get input data set up properly and stored.
-			InputData input = new InputData(args);
-			System.out.println("DnsClient sending request for " + input.name);
-			System.out.println("Server: " + input.dnsServerIpString);
-			System.out.println("Request type: " + input.type.name());
-			// Create the message
-			
-			Message response = sendRequestAndReceiveResponse(input);
+			Message response = performDNSRequest(args);
 			printOutMessage(response);
 
 		} catch (Exception e) {
@@ -37,7 +34,14 @@ public class DnsClient {
 		}
 	}
 	
-	public static Message sendRequestAndReceiveResponse(InputData input) throws IOException, InvalidFormatException {
+	public static Message performDNSRequest(String[] args) throws IOException, InvalidFormatException {
+		// First thing we do is get input data set up properly and stored.
+		InputData input = new InputData(args);
+		System.out.println("DnsClient sending request for " + input.name);
+		System.out.println("Server: " + input.dnsServerIpString);
+		System.out.println("Request type: " + input.type.name());
+		
+		// Create the request Message instance.
 		Message m = new Message(input.type, input.dnsServerIp, input.name);
 		byte[] data = m.toByteArray();
 
@@ -78,8 +82,8 @@ public class DnsClient {
 		if (!didReceiveResponse) {
 			throw new SocketTimeoutException("Exceeded maximum number of retries.");
 		}
-
-		Message response = Message.fromBytes(responsePacket.getData());
+		byte[] responseBytes = responsePacket.getData();
+		Message response = Message.fromBytes(responseBytes);
 		return response;
 	}
 	

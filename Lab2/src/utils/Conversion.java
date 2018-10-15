@@ -2,8 +2,6 @@ package utils;
 
 import java.util.ArrayList;
 
-import model.enums.*;
-
 public class Conversion {
 	public static String binaryString(byte value) {
 		return String.format("%8s", Integer.toBinaryString(value & 0xFF)).replace(' ', '0');

@@ -2,6 +2,11 @@ package model.errors;
 
 public class InvalidFormatException extends Exception {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1123123L;
+
 	public InvalidFormatException() {
 		// TODO Auto-generated constructor stub
 	}

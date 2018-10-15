@@ -1,17 +1,16 @@
 package model;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
-import org.junit.jupiter.api.Test;
-
-import junit.framework.TestCase;
-
-import model.Pointer;
+import org.junit.Test;
 import utils.Conversion;
 
-class MessageTests extends TestCase {
+public class MessageTests {
+	
+	
+	
 	@Test
-	void bytesAreCorrect() {
+	public void bytesAreCorrect() {
 		
 		short originalOffset = 52;
 		String originalOffsetString = Conversion.binaryString(originalOffset);
@@ -24,30 +23,31 @@ class MessageTests extends TestCase {
 		assertEquals(originalOffsetString.substring(2, 16), byteString.substring(2, 16));
 	}
 
-	@Test()
-	void invalidBytesThrowsException() {
-		assertThrows(IllegalArgumentException.class, () -> {
-			new Pointer(
-					(byte)0b0000_0000,
-					(byte)0b0000_0000
-			);
-		});
-		assertThrows(IllegalArgumentException.class, () -> {
-			new Pointer(
-					(byte)0b1000_0000,
-					(byte)0b0000_0000
-			);
-		});
-		assertThrows(IllegalArgumentException.class, () -> {
-			new Pointer(
-					(byte)0b0100_0000,
-					(byte)0b0000_0000
-			);
-		});	
+	@Test(expected = IllegalArgumentException.class)
+	public void invalidBytesThrowsException1() {
+		new Pointer(
+				(byte)0b0000_0000,
+				(byte)0b0000_0000
+		);
 	}
-	
+	@Test(expected = IllegalArgumentException.class)
+	public void invalidBytesThrowsException2() {
+		new Pointer(
+				(byte)0b1000_0000,
+				(byte)0b0000_0000
+		);	
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void invalidBytesThrowsException3() {
+		new Pointer(
+				(byte)0b0100_0000,
+				(byte)0b0000_0000
+		);
+	}
+
 	@Test()
-	void rightOffsetIsRead() {
+	public void rightOffsetIsRead() {
 		Pointer bob = new Pointer(
 				(byte)0b1100_0000,
 				(byte)0b0000_1111 // the number 28.

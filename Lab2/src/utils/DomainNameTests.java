@@ -1,18 +1,17 @@
 package utils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import junit.framework.TestCase;
 import model.Pointer;
 import model.errors.InvalidFormatException;
 
-class DomainNameTests extends TestCase {
+public class DomainNameTests{
 	@Test
-	void testToBytes() {
+	public void testToBytes() {
 		String domainName = "www.mcgill.ca";
 		byte[] expected = ByteBuffer.allocate(4 + 7 + 3 + 1)
 				.put((byte) 3).put((byte) 'w').put((byte) 'w').put((byte) 'w')
@@ -25,7 +24,7 @@ class DomainNameTests extends TestCase {
 	}
 
 	@Test
-	void testParseSimpleLabelSequence() {
+	public void testParseSimpleLabelSequence() {
 		String expected = "www.mcgill.ca";
 		byte[] rawBytes = ByteBuffer.allocate(4 + 7 + 3 + 1)
 				.put((byte) 3).put((byte) 'w').put((byte) 'w').put((byte) 'w')
@@ -45,7 +44,7 @@ class DomainNameTests extends TestCase {
 	}
 	
 	@Test
-	void testParseEmptyLabel() {
+	public void testParseEmptyLabel() {
 		byte[] rawBytes = new byte[] {0};
 		ParsingResult<String> name;
 		try {
@@ -59,7 +58,7 @@ class DomainNameTests extends TestCase {
 	}
 	
 	@Test
-	void testParsePointer() {
+	public void testParsePointer() {
 		String expected = "www.mcgill.ca";
 		ByteBuffer buffer = ByteBuffer.allocate(100);
 		
@@ -88,7 +87,7 @@ class DomainNameTests extends TestCase {
 	}
 	
 	@Test
-	void testParseLabelSequenceEndingWithPointer() {
+	public void testParseLabelSequenceEndingWithPointer() {
 		String expected = "www.mcgill.ca";
 		ByteBuffer buffer = ByteBuffer.allocate(100);
 		
