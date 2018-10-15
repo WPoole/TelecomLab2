@@ -18,11 +18,13 @@ public abstract class ResourceRecord implements BytesSerializable {
 	 */
 	public byte[] NAME;
 	/**
-	 * The human-readable domain name contained within the NAME field (ex: "www.mcgill.ca").
+	 * The human-readable domain name contained within the NAME field (ex:
+	 * "www.mcgill.ca").
 	 */
 	public String nameString;
 	/**
-	 * The total byte-length of this RR. Used when reading through a sequence of RR's.
+	 * The total byte-length of this RR. Used when reading through a sequence of
+	 * RR's.
 	 */
 	public int byteLength;
 	/**
@@ -53,27 +55,24 @@ public abstract class ResourceRecord implements BytesSerializable {
 	 * field is a 4 octet ARPA Internet address.
 	 */
 	public byte[] RDATA;
-	
+
 	/**
 	 * Is set to true if the Message Header's AA flag is true.
 	 */
 	public boolean isAuthoritative;
+
 	@Override
 	public byte[] toByteArray() {
 		this.NAME = DomainName.toBytes(this.nameString);
-		ByteBuffer buffer = ByteBuffer
-			.allocate(this.length())
-			.put(this.NAME)
-			.putShort((short) this.TYPE.value)
-			.putShort((short) this.CLASS.value)
-			.putInt((int) this.TTL)
-			.putShort((short) this.RDLENGTH)
-			.put(this.RDATA);
+		ByteBuffer buffer = ByteBuffer.allocate(this.length()).put(this.NAME).putShort((short) this.TYPE.value)
+				.putShort((short) this.CLASS.value).putInt((int) this.TTL).putShort((short) this.RDLENGTH)
+				.put(this.RDATA);
 		return buffer.array();
 	}
-	
+
 	/**
 	 * Return the length (in bytes) of this ResourceRecord.
+	 * 
 	 * @return
 	 */
 	public int length() {
@@ -81,25 +80,26 @@ public abstract class ResourceRecord implements BytesSerializable {
 			this.NAME = DomainName.toBytes(this.nameString);
 		}
 		return this.NAME.length + 2 // TYPE
-			+ 2 // CLASS
-			+ 4 // TTL
-			+ 2 // RDLENGTH
-			+ this.RDLENGTH;
+				+ 2 // CLASS
+				+ 4 // TTL
+				+ 2 // RDLENGTH
+				+ this.RDLENGTH;
 	}
 
-	public static ResourceRecord fromBytes(byte[] bytes, int offset, boolean isAuthoritative) throws InvalidFormatException {
+	public static ResourceRecord fromBytes(byte[] bytes, int offset, boolean isAuthoritative)
+			throws InvalidFormatException {
 		ResourceRecord rr;
 		ByteBuffer buffer = ByteBuffer.wrap(bytes, offset, bytes.length - offset).asReadOnlyBuffer();
-		
+
 		ParsingResult<String> name = DomainName.parseDomainName(bytes, offset);
 		byte[] nameBytes = new byte[name.bytesUsed];
 		// copy the bytes of the 'NAME' field into the nameBytes array.
 		buffer.get(nameBytes);
-		
+
 		// parse the TYPE, CLASS, TTL, and RDLength, which are fixed-length fields.
 		Type type = Type.fromBytes(buffer.get(), buffer.get());
 
-		switch(type) {
+		switch (type) {
 		case A:
 			rr = new ARecord();
 			break;
@@ -113,14 +113,14 @@ public abstract class ResourceRecord implements BytesSerializable {
 			rr = new CNAMERecord();
 			break;
 		default:
-			rr = null;
+//			System.out.println("ERROR\t Encountered an unexpected ResourceRecord type: " + type.name());
+			rr = new UnsupportedResourceRecord(type);
 			break;
 		}
 		rr.isAuthoritative = isAuthoritative;
 		rr.NAME = nameBytes;
 		rr.nameString = name.result;
-		
-		
+
 		rr.CLASS = QClass.fromBytes(buffer.get(), buffer.get());
 		rr.TTL = Integer.toUnsignedLong(buffer.getInt());
 		rr.RDLENGTH = buffer.getShort() & 0xFFFF;
@@ -131,18 +131,18 @@ public abstract class ResourceRecord implements BytesSerializable {
 		buffer.get(rr.RDATA);
 		// parse the RDATA section (type-dependent implementation).
 		rr.parseRData(bytes, rDataOffset);
-		
+
 		return rr;
 	}
-	
+
 	public void printToConsole() {
 		System.out.println(this.consoleString());
 	}
-	
+
 	/**
 	 * Populates the corresponding fields using the Bytes in the RDATA array.
 	 */
 	protected abstract void parseRData(byte[] rawBytes, int rDataOffset);
-	
+
 	protected abstract String consoleString();
 }
