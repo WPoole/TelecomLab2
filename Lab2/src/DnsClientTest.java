@@ -20,6 +20,8 @@ import utils.Conversion;
 
 @RunWith(Theories.class)
 public class DnsClientTest {
+	public static String dnsServerIP = "@8.8.8.8";
+	
 	@DataPoints
 	public static String[] SIMPLE_QUERY = new String[] {
 			"www.yahoo.com",
@@ -28,7 +30,7 @@ public class DnsClientTest {
 	
 	@Theory
 	public void typeAQuery(String hostName) {
-		String[] args = {"@8.8.8.8", hostName};
+		String[] args = {dnsServerIP, hostName};
 		
 		Message response;
 		InetAddress expected;
@@ -57,7 +59,7 @@ public class DnsClientTest {
 	
 	@Theory
 	public void typeMXQuery(String hostName) {
-		String[] args = {"-mx", "@8.8.8.8", hostName};
+		String[] args = {"-mx", dnsServerIP, hostName};
 		Message response;
 		try {
 			response = DnsClient.performDNSRequest(args);
