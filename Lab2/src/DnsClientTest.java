@@ -43,13 +43,14 @@ public class DnsClientTest {
 	
 	@Test
 	public void testYahooCaTypeA() {
-		String[] args = {"@8.8.8.8", "www.yahoo.ca"};
+		String hostName = "www.yahoo.ca";
+		String[] args = {"@8.8.8.8", hostName};
 		
 		Message response;
 		InetAddress expected;
 		try {
 			response = DnsClient.performDNSRequest(args);
-			expected = Inet4Address.getByName("www.mcgill.ca");
+			expected = Inet4Address.getByName(hostName);
 		} catch (IOException | InvalidFormatException e) {
 			System.err.println(e);
 			e.printStackTrace();
