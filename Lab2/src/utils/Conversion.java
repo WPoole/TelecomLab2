@@ -50,5 +50,15 @@ public class Conversion {
 		return result;
 	}
 	
+	public static String ipBytesToString(byte[] ipBytes) {
+		StringBuilder result = new StringBuilder();
+		for(int i=0; i<4; i++) {
+			result.append(Integer.toUnsignedString(ipBytes[i]));
+			if (i != 3) {
+				result.append(".");
+			}
+		}
+		return result.toString();
+	}
 	
 }
