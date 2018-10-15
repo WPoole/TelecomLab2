@@ -43,7 +43,7 @@ public class DnsClientTest {
 	
 	@Test
 	public void testYahooCaTypeA() {
-		String hostName = "www.yahoo.ca";
+		String hostName = "www.facebook.com";
 		String[] args = {"@8.8.8.8", hostName};
 		
 		Message response;
@@ -57,25 +57,14 @@ public class DnsClientTest {
 			fail();
 			return;
 		}
-		
-		for(ResourceRecord rr : response.answer) {
-			rr.printToConsole();
-		}
-		for(ResourceRecord rr : response.authority) {
-			rr.printToConsole();
-		}
-		for(ResourceRecord rr : response.additional) {
-			rr.printToConsole();
-		}
+		DnsClient.printOutMessage(response);
 		System.out.println("(Expected: " + Conversion.ipBytesToString(expected.getAddress()) + ")");
 
 		// we should get at least one answer.
 		assertTrue(response.answer.length >= 1);
-		
 		for(ResourceRecord rr : response.answer) {
 			// we should get at least one Type A record.
-			if (rr.TYPE == Type.A) {
-				assertArrayEquals(expected.getAddress(), rr.RDATA);	
+			if (rr.TYPE == Type.A && Arrays.equals(expected.getAddress(), rr.RDATA)) {
 				return;
 			}
 		}

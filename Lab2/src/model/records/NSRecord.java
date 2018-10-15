@@ -16,9 +16,9 @@ public class NSRecord extends ResourceRecord {
 	}
 	
 	@Override
-	protected void parseRData() {
+	protected void parseRData(byte[] rawBytes, int rDataOffset) {
 		try {
-			this.nameServerDomainName = DomainName.parseDomainName(this.RDATA).result;
+			this.nameServerDomainName = DomainName.parseDomainName(rawBytes, rDataOffset).result;
 		} catch (InvalidFormatException e) {
 			System.err.println("ERROR\t Unable to parse the name server domain name inside the Resource Record.");
 			e.printStackTrace();

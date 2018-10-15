@@ -15,9 +15,10 @@ public class CNAMERecord extends ResourceRecord {
 	}
 	
 	@Override
-	protected void parseRData() {
+	protected void parseRData(byte[] rawBytes, int rDataOffset) {
 		try {
-			this.cannonicalName = DomainName.parseDomainName(this.RDATA).result;
+			// we need to parse the RDATA field, which contains a 
+			this.cannonicalName = DomainName.parseDomainName(rawBytes, rDataOffset).result;
 		} catch (InvalidFormatException e) {
 			System.err.println("ERROR\t Unable to parse the domain name inside the Resource Record.");
 			e.printStackTrace();

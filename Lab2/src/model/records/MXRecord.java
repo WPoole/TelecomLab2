@@ -23,10 +23,10 @@ public class MXRecord extends ResourceRecord {
 	}
 	
 	@Override
-	protected void parseRData() {
+	protected void parseRData(byte[] rawBytes, int rDataOffset) {
 		this.preference = ByteBuffer.wrap(this.RDATA, 0, 2).getShort();
 		try {
-			this.exchange = DomainName.parseDomainName(this.RDATA, 2).result;
+			this.exchange = DomainName.parseDomainName(rawBytes, rDataOffset).result;
 		} catch (InvalidFormatException e) {
 			System.err.println("ERROR\t Unable to parse the domain name in the MXRecord.");
 			e.printStackTrace();

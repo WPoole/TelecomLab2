@@ -10,28 +10,47 @@ import model.Pointer;
 import model.errors.InvalidFormatException;
 
 public class DomainNameTests{
+	
+	public static String testHostName = "www.facebook.com";
+	public static void putHostName(ByteBuffer buffer, String hostname) {
+		String[] words = hostname.split("\\.");
+		for(String word : words) {
+			buffer.put((byte) word.length());
+			for(char c : word.toCharArray()) {
+				buffer.put((byte) c);
+			}
+		}
+	}
+	
+	public static int bytesNeeded(String hostname) {
+		String[] words = hostname.split("\\.");
+//		a.b.c.d --> 2 + 2 + 2 + 2 + 1
+		int count = 0;
+		for(String word : words) {
+			count += 1; // the length bit
+			count += word.length(); // one bit per character.
+		}
+		count++; // the empty byte at the end.		
+		return count;
+	}
+	
 	@Test
 	public void testToBytes() {
-		String domainName = "www.mcgill.ca";
-		byte[] expected = ByteBuffer.allocate(4 + 7 + 3 + 1)
-				.put((byte) 3).put((byte) 'w').put((byte) 'w').put((byte) 'w')
-				.put((byte)6).put((byte) 'm').put((byte)'c').put((byte) 'g').put((byte)'i').put((byte)'l').put((byte)'l')
-				.put((byte)2).put((byte) 'c').put((byte) 'a')
-				.put((byte)0)
-				.array();
-		byte[] actual = DomainName.toBytes(domainName);
+		ByteBuffer buffer = ByteBuffer.allocate(bytesNeeded(testHostName));
+		putHostName(buffer, testHostName);
+		buffer.put((byte) 0);
+		byte[] expected = buffer.array();
+		byte[] actual = DomainName.toBytes(testHostName);
 		assertArrayEquals(expected, actual);
 	}
 
 	@Test
-	public void testParseSimpleLabelSequence() {
-		String expected = "www.mcgill.ca";
-		byte[] rawBytes = ByteBuffer.allocate(4 + 7 + 3 + 1)
-				.put((byte) 3).put((byte) 'w').put((byte) 'w').put((byte) 'w')
-				.put((byte)6).put((byte) 'm').put((byte)'c').put((byte) 'g').put((byte)'i').put((byte)'l').put((byte)'l')
-				.put((byte)2).put((byte) 'c').put((byte) 'a')
-				.put((byte)0)
-				.array();
+	public void testParseSimpleLabelSequence() {		
+		ByteBuffer buffer = ByteBuffer.allocate(bytesNeeded(testHostName));
+		putHostName(buffer, testHostName);
+		buffer.put((byte) 0);
+		
+		byte[] rawBytes = buffer.array();
 		ParsingResult<String> actual;
 		try {
 			actual = DomainName.parseDomainName(rawBytes);
@@ -39,8 +58,8 @@ public class DomainNameTests{
 			fail();
 			return;
 		}
-		assertEquals(15, actual.bytesUsed);
-		assertEquals(expected, actual.result);
+		assertEquals(bytesNeeded(testHostName), actual.bytesUsed);
+		assertEquals(testHostName, actual.result);
 	}
 	
 	@Test
@@ -59,7 +78,7 @@ public class DomainNameTests{
 	
 	@Test
 	public void testParsePointer() {
-		String expected = "www.mcgill.ca";
+		String expected = testHostName;
 		ByteBuffer buffer = ByteBuffer.allocate(100);
 		
 		buffer.position(0);
@@ -68,9 +87,7 @@ public class DomainNameTests{
 		
 		// put the "www.mcgill.ca" at position 50, and put a pointer to it at position 0.
 		buffer.position(50);
-		buffer.put((byte) 3).put((byte) 'w').put((byte) 'w').put((byte) 'w');
-		buffer.put((byte) 6).put((byte) 'm').put((byte)'c').put((byte) 'g').put((byte)'i').put((byte)'l').put((byte)'l');
-		buffer.put((byte) 2).put((byte) 'c').put((byte)'a');
+		putHostName(buffer, expected);
 		buffer.put((byte) 0);
 		
 		byte[] rawBytes = buffer.array();
@@ -93,7 +110,8 @@ public class DomainNameTests{
 		
 		// put the "www.mcgill" at position 0, followed by a Pointer to the ".ca" at position 50.
 		buffer.position(3);
-		buffer.put((byte) 3).put((byte) 'w').put((byte) 'w').put((byte) 'w');
+		putHostName(buffer, "www");
+//		buffer.put((byte) 3).put((byte) 'w').put((byte) 'w').put((byte) 'w');
 		Pointer p = new Pointer((short) 50);
 		buffer.put(p.toBytes());
 		

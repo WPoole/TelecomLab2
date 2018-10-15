@@ -3,6 +3,7 @@ package model;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import model.enums.OpCode;
 import model.enums.QClass;
@@ -45,12 +46,12 @@ public class Message implements BytesSerializable{
 		// TODO: populate all the fields correctly.
 		
 		this.header = new MessageHeader();
-		this.header.ID = MessageHeader.defaultId; // some integer we always use.
+		this.header.ID = (short) new Random().nextInt();; // some integer we always use.
 		this.header.QR = false; // sending a query.
 		this.header.OPCODE = OpCode.QUERY; // we are sending a standard Query.
 		this.header.AA = false; // this is not an authoritative answer.
 		this.header.TC = false; // we are (hopefully) not going to send a truncated message.
-		this.header.RD = false; // (not sure) recursion desired. optional.
+		this.header.RD = true; // (not sure) recursion desired. optional.
 		this.header.Z = 0; // (always zero).
 		this.header.RCODE = ResponseCode.NO_ERROR; // will be set by the server during the response.
 		this.header.QDCOUNT = 1; // we are asking one question (one domain name)

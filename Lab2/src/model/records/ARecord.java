@@ -11,7 +11,7 @@ public class ARecord extends ResourceRecord {
 	
 	
 	@Override
-	protected void parseRData() {
+	protected void parseRData(byte[] rawBytes, int rDataOffset) {
 		assert this.RDLENGTH == 4;
 		this.address = this.RDATA;
 	}

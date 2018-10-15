@@ -30,14 +30,14 @@ import utils.Conversion;
  */
 public class MessageHeader implements BytesSerializable{
 	
-	public static short defaultId = 123;
+//	public static short defaultId = 123;
 	
 	/**
 	 * A 16 bit identifier assigned by the program that generates any kind
 	 * of query. This identifier is copied the corresponding reply and can
 	 * be used by the requester to match up replies to outstanding queries.
 	 */
-	short ID = defaultId;
+	short ID;
 	/**
 	 * A one bit field that specifies whether this message is a query (0),
 	 * or a response (1).
@@ -116,6 +116,8 @@ public class MessageHeader implements BytesSerializable{
 				Conversion.binaryString(this.RA) +
 				"000" + // Z value must be zero, (reserved for future use).
 				Conversion.binaryString(this.RCODE.value, 4);
+		
+		
 		
 		ByteBuffer buffer = ByteBuffer.allocate(6 * 2)
 				.putShort(this.ID)

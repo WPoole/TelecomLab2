@@ -127,9 +127,10 @@ public abstract class ResourceRecord implements BytesSerializable {
 		rr.RDATA = new byte[rr.RDLENGTH];
 
 		// copy the next RDLENGTH bytes into the RDATA field.
+		int rDataOffset = buffer.position();
 		buffer.get(rr.RDATA);
 		// parse the RDATA section (type-dependent implementation).
-		rr.parseRData();
+		rr.parseRData(bytes, rDataOffset);
 		
 		return rr;
 	}
@@ -141,7 +142,7 @@ public abstract class ResourceRecord implements BytesSerializable {
 	/**
 	 * Populates the corresponding fields using the Bytes in the RDATA array.
 	 */
-	protected abstract void parseRData();
+	protected abstract void parseRData(byte[] rawBytes, int rDataOffset);
 	
 	protected abstract String consoleString();
 }
