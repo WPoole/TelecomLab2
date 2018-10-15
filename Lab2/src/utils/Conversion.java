@@ -53,7 +53,7 @@ public class Conversion {
 	public static String ipBytesToString(byte[] ipBytes) {
 		StringBuilder result = new StringBuilder();
 		for(int i=0; i<4; i++) {
-			result.append(Integer.toUnsignedString(ipBytes[i]));
+			result.append(Integer.toUnsignedString(ipBytes[i] & 0xFF));
 			if (i != 3) {
 				result.append(".");
 			}
