@@ -42,9 +42,7 @@ public class Message implements BytesSerializable{
 	 * @param dnsServerIpAddress
 	 * @param name
 	 */
-	public Message(Type type, byte[] dnsServerIpAddress, String name) {
-		// TODO: populate all the fields correctly.
-		
+	public Message(Type type, byte[] dnsServerIpAddress, String name) {		
 		this.header = new MessageHeader();
 		this.header.ID = (short) new Random().nextInt();; // some integer we always use.
 		this.header.QR = false; // sending a query.

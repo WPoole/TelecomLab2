@@ -24,7 +24,7 @@ public class MXRecord extends ResourceRecord {
 	
 	@Override
 	protected void parseRData(byte[] rawBytes, int rDataOffset) {
-		this.preference = ByteBuffer.wrap(this.RDATA, 0, 2).getShort();
+		this.preference = ByteBuffer.wrap(this.RDATA).getShort();
 		try {
 			this.exchange = DomainName.parseDomainName(rawBytes, rDataOffset).result;
 		} catch (InvalidFormatException e) {
@@ -41,6 +41,7 @@ public class MXRecord extends ResourceRecord {
 		output.append(this.nameString);
 		output.append('\t');
 		output.append(this.preference);
+		output.append('\t');
 		output.append(this.TTL);
 		output.append('\t');
 		output.append(this.isAuthoritative ? "Auth" : "no-auth");
