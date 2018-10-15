@@ -69,8 +69,8 @@ public class DnsClient {
 			try {
 				socket.receive(responsePacket); // Receive response. Will block until timeout occurs.
 				didReceiveResponse = true;
-				long timeSpent = (System.currentTimeMillis() - startTime) / 1000;
-				System.out.println("Response received after " + timeSpent + " seconds (" + retries + " retries)");
+				float timeSpent = (System.currentTimeMillis() - startTime) / 1000f;
+				System.out.println("Response received after " + String.format("%.3f", timeSpent) + " seconds (" + retries + " retries)");
 			} catch (SocketTimeoutException t) {
 				System.out.println("Timeout " + retries + "/" + input.maxRetries);
 			}

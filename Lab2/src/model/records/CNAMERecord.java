@@ -30,7 +30,7 @@ public class CNAMERecord extends ResourceRecord {
 		// CNAME <tab> [alias] <tab> [seconds can cache] <tab> [auth | nonauth]
 		StringBuilder output = new StringBuilder();
 		output.append("CNAME\t");
-		output.append(this.nameString);
+		output.append(this.cannonicalName);
 		output.append('\t');
 		output.append(this.TTL);
 		output.append('\t');
