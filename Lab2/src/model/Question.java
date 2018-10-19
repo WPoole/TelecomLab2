@@ -29,6 +29,18 @@ public class Question implements BytesSerializable {
 	 */
 	QClass QCLASS;
 
+	public Question(String name, Type type) {
+		this.QNAME = name;
+		this.QTYPE = type;
+		this.QCLASS = QClass.IN;
+	}
+	
+	/**
+	 * Constructor used only in the static factory method.
+	 */
+	private Question() {}
+	
+	
 	@Override
 	public byte[] toByteArray() {
 		if (this.qNameBytes == null) {

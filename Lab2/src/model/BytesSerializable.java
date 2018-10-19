@@ -7,7 +7,7 @@ import java.util.List;
  * Interface which describes objects that can be serialized into a sequence of bytes.
  * NOTE: One of toBytes() or toByteArray() must absolutely be implemented.
  */
-public interface BytesSerializable {
+public interface BytesSerializable{
 	default public List<Byte> toBytes() {
 		byte[] bytes = this.toByteArray();
 		ArrayList<Byte> values = new ArrayList<>();

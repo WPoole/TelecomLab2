@@ -15,18 +15,13 @@ public class DnsClient {
 //		args = new String[] { "@8.8.8.8", "yahoo.ca" };
 //		args = new String[] { "@8.8.8.8", "yahoo.ca" };
 		args = new String[] { "@8.8.8.8", "www.mcgill.ca" };
-//		args = new String[] { "–t","10", "–r", "2", "–mx", "@8.8.8.8", "mcgill.ca" };
-//		args = new String[] { "–t","10", "–r", "2", "–mx", "@8.8.8.8", "mcgill.ca" };
-//		args = new String[] { "–t","10", "–r", "2", "–mx", "@8.8.8.8", "mcgill.ca" };
-//		args = new String[] { "–t","10", "–r", "2", "–mx", "@8.8.8.8", "mcgill.ca" };
-//		args = new String[] { "–t","10", "–r", "2", "–mx", "@8.8.8.8", "mcgill.ca" };
 
 		// Program must be invoked according to following format:
 		// java DnsClient [-t timeout] [-r max-retries] [-p port] [-mx|-ns] @server name
 
 		try {
 			Message response = performDNSRequest(args);
-			printOutMessage(response);
+			response.printToConsole();
 
 		} catch (Exception e) {
 			System.err.println("ERROR\t"+e);
@@ -85,29 +80,5 @@ public class DnsClient {
 		byte[] responseBytes = responsePacket.getData();
 		Message response = Message.fromBytes(responseBytes);
 		return response;
-	}
-	
-	public static void printOutMessage(Message response) {
-		if (response.isErrorResponse()) {
-			System.out.println("ERROR\t" + response.getHeaderResponseCodeDescription());
-		}
-		if (response.answer.length > 0) {
-			System.out.println("***Answer Section (" + response.answer.length + " records)***");
-			for (ResourceRecord rr : response.answer) {
-				rr.printToConsole();
-			}
-		}
-		if (response.authority.length > 0) {
-			System.out.println("***Authoritative Section (" + response.authority.length + " records)***");
-			for (ResourceRecord rr : response.authority) {
-				rr.printToConsole();
-			}
-		}
-		if (response.additional.length > 0) {
-			System.out.println("***Additional Section (" + response.additional.length + " records)***");
-			for (ResourceRecord rr : response.additional) {
-				rr.printToConsole();
-			}
-		}
 	}
 }

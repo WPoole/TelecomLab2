@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import model.enums.OpCode;
 import model.enums.ResponseCode;
@@ -102,7 +103,18 @@ public class MessageHeader implements BytesSerializable{
 	short ARCOUNT;
 
 	public MessageHeader() {
-		
+		this.ID = (short) new Random().nextInt();
+		this.QR = false; // sending a query.
+		this.OPCODE = OpCode.QUERY; // we are sending a standard Query.
+		this.AA = false; // this is not an authoritative answer.
+		this.TC = false; // we are (hopefully) not going to send a truncated message.
+		this.RD = true; // (not sure) recursion desired. optional.
+		this.Z = 0; // (always zero).
+		this.RCODE = ResponseCode.NO_ERROR; // will be set by the server during the response.
+		this.QDCOUNT = 1; // we are asking one question (one domain name)
+		this.ANCOUNT = 0; // no resource records in answer (this is a question)
+		this.NSCOUNT = 0; // same here
+		this.ARCOUNT = 0; // same here also.
 	}
 	
 	@Override
@@ -135,7 +147,6 @@ public class MessageHeader implements BytesSerializable{
 		return result;
 	}
 
-	
 	public static MessageHeader fromBytes(byte[] bytes){
 		MessageHeader header = new MessageHeader();
 		try {

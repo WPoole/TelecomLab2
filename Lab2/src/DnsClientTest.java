@@ -43,7 +43,7 @@ public class DnsClientTest {
 			fail();
 			return;
 		}
-		DnsClient.printOutMessage(response);
+		response.printToConsole();
 		System.out.println("(Expected: " + Conversion.ipBytesToString(expected.getAddress()) + ")");
 
 		// we should get at least one answer.
@@ -69,7 +69,7 @@ public class DnsClientTest {
 			fail();
 			return;
 		}
-		DnsClient.printOutMessage(response);
+		response.printToConsole();
 	}
 		
 }
