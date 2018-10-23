@@ -1,5 +1,7 @@
 package model.records;
 
+import java.util.Arrays;
+
 import model.enums.Type;
 import model.errors.InvalidFormatException;
 import utils.DomainName;

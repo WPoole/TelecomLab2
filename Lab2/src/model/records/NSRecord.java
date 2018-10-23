@@ -30,7 +30,7 @@ public class NSRecord extends ResourceRecord {
 		// NS * <tab> [alias] <tab> [seconds can cache] <tab> [auth | nonauth]
 		StringBuilder output = new StringBuilder();
 		output.append("NS\t");
-		output.append(this.nameString);
+		output.append(this.nameServerDomainName);
 		output.append('\t');
 		output.append(this.TTL);
 		output.append('\t');

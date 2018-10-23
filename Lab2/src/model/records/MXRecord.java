@@ -1,6 +1,7 @@
 package model.records;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import model.enums.Type;
 import model.errors.InvalidFormatException;
@@ -26,7 +27,8 @@ public class MXRecord extends ResourceRecord {
 	protected void parseRData(byte[] rawBytes, int rDataOffset) {
 		this.preference = ByteBuffer.wrap(this.RDATA).getShort();
 		try {
-			this.exchange = DomainName.parseDomainName(rawBytes, rDataOffset).result;
+			// the exchange field is two bytes further within RDATA, since we just parsed the PREFERENCE field (2 bytes)
+			this.exchange = DomainName.parseDomainName(rawBytes, rDataOffset + 2).result;
 		} catch (InvalidFormatException e) {
 			System.err.println("ERROR\t Unable to parse the domain name in the MXRecord.");
 			e.printStackTrace();
@@ -38,7 +40,7 @@ public class MXRecord extends ResourceRecord {
 		// MX <tab> [alias] <tab> [pref] <tab> [seconds can cache] <tab> [auth | nonauth]
 		StringBuilder output = new StringBuilder();
 		output.append("MX\t");
-		output.append(this.nameString);
+		output.append(this.exchange);
 		output.append('\t');
 		output.append(this.preference);
 		output.append('\t');
