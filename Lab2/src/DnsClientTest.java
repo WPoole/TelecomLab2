@@ -24,9 +24,16 @@ public class DnsClientTest {
 	
 	@DataPoints
 	public static String[] SIMPLE_QUERY = new String[] {
-			"www.yahoo.com",
+			"www.google.com",
 			"www.facebook.com",
+			"www.yahoo.com",
+			"www.github.com",
+			"www.youtube.com",
+			"www.amazon.com",
+			"www.bloomberg.com",			
 	};
+	
+	
 	
 	@Theory
 	public void typeAQuery(String hostName) {
@@ -55,6 +62,11 @@ public class DnsClientTest {
 			}
 		}
 		fail();
+	}
+	
+	@Theory
+	public void typeAQueryWithRetries(String hostname) {
+		
 	}
 	
 	@Theory

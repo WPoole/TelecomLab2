@@ -10,15 +10,8 @@ import model.records.ResourceRecord;
 
 public class DnsClient {
 	public static void main(String[] args) {
-//		args = new String[] { "�t", "10", "�r", "2", "�mx", "@8.8.8.8", "mcgill.ca" };
-//		args = new String[] { "�mx", "@8.8.8.8", "yahoo.ca" };
-//		args = new String[] { "@8.8.8.8", "yahoo.ca" };
-//		args = new String[] { "@8.8.8.8", "yahoo.ca" };
-		args = new String[] { "-mx", "@8.8.8.8", "yahoo.ca" };
-
 		// Program must be invoked according to following format:
 		// java DnsClient [-t timeout] [-r max-retries] [-p port] [-mx|-ns] @server name
-
 		try {
 			Message response = performDNSRequest(args);
 			response.printToConsole();
