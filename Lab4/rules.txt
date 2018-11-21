@@ -1,0 +1,77 @@
+Interfaces:
+- bro: switch to Server machines
+- br1: switch to Client machines
+- eth0: outside world
+- lo: loopback (same machine, other process)
+
+IP addresses:
+clientA 10.0.5.2
+clientB 10.0.5.3
+serverA 10.0.4.2
+serverB 10.0.4.3
+
+Some examples of commands:
+Allow all incoming HTTP:
+sudo iptables -A INPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+sudo iptables -A OUTPUT -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+
+Allow all incomign HTTP & https:
+sudo iptables -A INPUT  -p tcp -m multiport --dports 80,443 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+sudo iptables -A OUTPUT -p tcp -m multiport --dports 80,443 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+
+Allow incoming SSH from specific address or subnet.
+sudo iptables -A INPUT -p tcp -s 15.15.15.0/24 --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+sudo iptables -A OUTPUT -p tcp --sport 22 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+
+
+---------------------- OUR RULES -----------------
+
+R1) Clients A and B can both access the websites hosted on Servers A and B.
+- what comes in from br1, and is headed to br0 with a port value of 80, is ALLOWED.
+
+    # incoming traffic from br1 to br0 with tcp protocol, and ports 80 or 443, that are either new packets or established packets, are accepted.
+    > iptables -A FORWARD -i br1 -o br0 -p tcp -m multiport --dports 80,443 -m conntrack --ctstate NEW, ESTABLISHED -j ACCEPT
+
+    # incoming traffic from br0 to br1 with tcp protocol, and ports 80 or 443, that are established packets, are accepted. (server can't initiate a http to client)
+    > iptables -A FORWARD -i br0 -o br1 -p tcp -m multiport --sports 80,443 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+
+
+R2) Client A can SSH to both Servers A and B.
+- what comes in from br1, with IP address 10.0.5.2, and port 22, and is going to bro, with a destination port of 22, is ALLOWED.
+    > iptables -A FORWARD -i br1 -o br0 -p tcp -s 10.0.5.2 --sport 22 --dport 22 -m conntrack --ctstate NEW, ESTABLISHED -j ACCEPT
+    > iptables -A FORWARD -i br0 -o br1 -p tcp -d 10.0.5.2 --sport 22 --dport 22 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+
+R3) Client B cannot SSH to either Server.
+- what comes in from br1, with IP address 10.0.5.3, and port 22, and is going to bro is DROPPED
+    > iptables -A FORWARD -i br1 -o br0 -s 10.0.5.3 --sport 22 -j DROP
+
+R4) All traffic going to UDP port 123 on the Gateway should be forwarded to the same port on
+Server B. (So, any host in the network using the NTP service should connect to UDP port 123
+on the Gateway rather than going directly to Server B.)
+    # What comes in with protocol udp and destination port 123 and destination of <this machine>, gets redirected to a destination address of 10.0.4.3 (Server B)
+    > iptables -t nat -A PREROUTING -p udp -d 10.0.3.119 --dport 123 -j DNAT --to-destination 10.0.4.3:123
+    > iptables -A FORWARD -p udp -d 10.0.4.3 --dport 123 -j ACCEPT
+
+    # now, whatever comes from Server B, has to be corrected such that it "appears" to come from the gateway.
+
+
+R5) Client A is a “secure” client that can only access services running on Servers A and B and
+cannot access the world outside your group’s virtual machine; i.e., Client A’s traffic is not
+forwarded outside the firewall to other group’s or to the WAN.
+
+    - what comes in from Client A and has a destination other than Servers A and B is dropped.
+    > iptables -A FORWARD -i br1 -o eth0 -s 10.0.5.2 -j DROP
+
+R6) Client B can access services running on Servers A and B as well as devices in the “outside
+world” (other groups’ virtual machines, and the public WAN).
+    > iptables -A FORWARD -i br1 -o eth0 -s 10.0.5.3 -j ACCEPT
+    > iptables -A FORWARD -i br1 -0 br0 -s 10.0.5.3 -j ACCEPT
+
+R7) The website hosted on Server A should be accessible outside the firewall and should appear to
+be running on the Gateway. In other words, connections to TCP port 80 on your Gateway’s
+external interface (e.g., coming from another group’s Gateway or Client B), should be
+forwarded to TCP port 80 on Server A. We recommend implementing and testing this requirement
+last, after you have the others working. You will need the help of another group or the course staff to test
+that this requirement is working correctly.
+
+> iptables -t nat -A PREROUTING - 
