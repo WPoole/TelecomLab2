@@ -61,7 +61,10 @@ iptables -A FORWARD -d $serverA -p tcp --dport 80 -m conntrack --ctstate NEW,EST
 iptables -A FORWARD -s $serverA -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
 echo "R8) The website hosted on Server B should only be accessible by nodes inside your firewall (Clients A and B, and Server A)."
-# TODO: Need to test with another group that they cannot access server B's website. I have already tested that all nodes in our network can access it.
+## TODO: This version, with everything EXCEPT eth0 as the input/output, should work, and is arguably clearer. 
+#iptables -A FORWARD -i !eth0 -o br0   -d $serverB -p tcp -m multiport --dports 80,443 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+#iptables -A FORWARD -i br0   -o !eth0 -s $serverB -p tcp -m multiport --sports 80,442 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+
 # For Client A and Client B traffic.
 iptables -A FORWARD -i br1 -o br0 -d $serverB -p tcp -m multiport --dports 80,443 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i br0 -o br1 -s $serverB -p tcp -m multiport --sports 80,443 -m conntrack --ctstate ESTABLISHED -j ACCEPT
